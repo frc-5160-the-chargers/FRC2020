@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.vscode
+
+pip_cache/
+opkg_cache/
+
+.deploy_cfg
+.installer_config
