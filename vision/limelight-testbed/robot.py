@@ -5,15 +5,14 @@ from wpilib import SmartDashboard as dash
 from limelight import MountedLimelight
 
 import json
-
-import os
+from pathlib import Path
 
 # load in config data/files
-with open(f"{os.getcwd()}/data/json/config.json") as f:
+with (Path(__file__).parent / "data/json/config.json").open() as f:
     config_data = json.load(f)
 
 class Robot(wpilib.TimedRobot):
-    def robotInit(self):        
+    def robotInit(self):
         self.limelight = MountedLimelight(
             config_data["mount_height"],
             config_data["mount_angle"]
