@@ -1,6 +1,6 @@
-// mounting parameters
-mount_height: 1 // m
-mount_angle: 0 // degrees
+// mounting params
+mount_height: .95       // m
+mount_angle: 33.6       // degrees
 
-// targetting params
-target_height: 1 // m
+// target params
+target_height: 2.3      // m

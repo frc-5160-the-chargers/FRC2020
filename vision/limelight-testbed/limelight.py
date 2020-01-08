@@ -47,10 +47,7 @@ class MountedLimelight:
         self.limelight.execute()
 
     def get_distance_trig(self, target_height):
-        # TODO mounting angle, for now with just being a direct port we're assuming that they're mounted
-        # on the same plane. this will (for obvious reasons) not always be the case
-
-        target_angle = self.limelight.get_vertical_angle_offset()
+        target_angle = self.limelight.get_vertical_angle_offset() + self.mounting_angle
         tan_angle = math.tan(math.radians(target_angle))
         height_difference = target_height-self.mounting_height
         
