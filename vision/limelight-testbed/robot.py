@@ -1,29 +1,32 @@
 import wpilib
 from networktables import NetworkTables, NetworkTablesInstance
 from wpilib import SmartDashboard as dash
+import magicbot
 
-from limelight import MountedLimelight
+from components.limelight import Limelight
 
-import json
-from pathlib import Path
+from config import load_config_file
 
-# load in config data/files
-with (Path(__file__).parent / "data/json/config.json").open() as f:
-    config_data = json.load(f)
+config_data = load_config_file()
 
-class Robot(wpilib.TimedRobot):
-    def robotInit(self):
-        self.limelight = MountedLimelight(
-            config_data["mount_height"],
-            config_data["mount_angle"]
-        )
+class Robot(magicbot.MagicRobot):
+    if "limelight" in config_data['enabled_devices']:
+        limelight: Limelight
+
+    def createObjects(self):
+        pass
+
+    def reset_subsystems(self):
+        if "limelight" in config_data['enabled_devices']:
+            self.limelight.reset()
 
     def teleopPeriodic(self):
-        self.limelight.update()
+        self.reset_subsystems()
 
-        dash.putNumber("Trig Calculated Distance: ", self.limelight.get_distance_trig(
-            config_data["target_height"]
-        ))
+        if "limelight" in config_data['enabled_devices']:
+            dash.putNumber("Trig Calculated Distance: ", self.limelight.get_distance_trig(
+                config_data['limelight']['target_height']
+            ))
 
 if __name__ == '__main__':
     wpilib.run(Robot)
