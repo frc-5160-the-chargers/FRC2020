@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .vscode
+*.log
 
 pip_cache/
 opkg_cache/

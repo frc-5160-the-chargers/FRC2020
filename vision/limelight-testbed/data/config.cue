@@ -9,5 +9,5 @@ limelight: {
 
 // enabled devices
 enabled_devices: [
-    "limelight"
+    "navx"
 ]
