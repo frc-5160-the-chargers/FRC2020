@@ -41,6 +41,9 @@ class Robot(magicbot.MagicRobot):
         if "navx" in config_data['enabled_devices']:
             self.navx = navx.AHRS.create_spi()
 
+        if "camera" in config_data['enabled_devices']:
+            wpilib.CameraServer.launch()
+
         self.controller = wpilib.XboxController(0)
 
     def reset_subsystems(self):
@@ -76,12 +79,16 @@ class Robot(magicbot.MagicRobot):
             ))
 
         if "navx" in config_data['enabled_devices']:
-            dx, dy, dz = self.navx_component.get_displacement()
             if self.controller.getXButtonPressed():
-                self.navx_component.reset_displacement()
-            dash.putNumber("Displacement X", dx)
-            dash.putNumber("Displacement Y", dy)
-            dash.putNumber("Displacement Z", dz)
+                self.navx_component.reset()
+            dx, dy, dz = self.navx_component.displacement
+            dash.putString("Displacement", f"{int(dx)}, {int(dy)}, {int(dz)}")
+
+            vx, vy, vz = self.navx_component.velocity
+            dash.putString("Velocity", f"{int(vx)}, {int(vy)}, {int(vz)}")
+            
+            ax, ay, az = self.navx_component.acceleration
+            dash.putString("Acceleration", f"{int(ax)}, {int(ay)}, {int(az)}")
 
 if __name__ == '__main__':
     wpilib.run(Robot)

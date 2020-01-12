@@ -9,5 +9,6 @@ limelight: {
 
 // enabled devices
 enabled_devices: [
-    "navx"
+    "navx",
+    "camera"
 ]
