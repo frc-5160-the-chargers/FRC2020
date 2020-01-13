@@ -1,6 +1,8 @@
 import navx
 import time
 
+from utils import g_to_si
+
 class NavX:
     navx: navx.AHRS
 
@@ -20,11 +22,9 @@ class NavX:
         return self.displacement
 
     def execute(self):
-        g = 9.8
-
-        ax = self.navx.getWorldLinearAccelX() * g
-        ay = self.navx.getWorldLinearAccelY() * g
-        az = self.navx.getWorldLinearAccelZ() * g
+        ax = g_to_si(self.navx.getWorldLinearAccelX())
+        ay = g_to_si(self.navx.getWorldLinearAccelY())
+        az = g_to_si(self.navx.getWorldLinearAccelZ())
 
         if self.last_time == -1:
             self.last_time = time.time()
