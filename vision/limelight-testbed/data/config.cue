@@ -9,6 +9,7 @@ limelight: {
 
 // enabled devices
 enabled_devices: [
-    "navx",
-    "camera"
+    "shooter",
+    "neo",
+    "limelight"
 ]

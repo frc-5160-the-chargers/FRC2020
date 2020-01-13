@@ -20,9 +20,11 @@ class NavX:
         return self.displacement
 
     def execute(self):
-        ax = self.navx.getRawAccelX()
-        ay = self.navx.getRawAccelY()
-        az = self.navx.getRawAccelZ()
+        g = 9.8
+
+        ax = self.navx.getWorldLinearAccelX() * g
+        ay = self.navx.getWorldLinearAccelY() * g
+        az = self.navx.getWorldLinearAccelZ() * g
 
         if self.last_time == -1:
             self.last_time = time.time()

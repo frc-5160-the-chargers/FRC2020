@@ -1,4 +1,4 @@
-from networktables import NetworkTables
+from networktables.networktable import NetworkTable
 
 import math
 import json
@@ -8,10 +8,10 @@ from config import load_config_file
 config_data = load_config_file()
 
 class Limelight:
+    limelight_table: NetworkTable
+
     def __init__(self):
         self.reset()
-        self.limelight_table = NetworkTables.getTable("limelight")
-
         self.mounting_angle = config_data['limelight']['mount_angle']
         self.mounting_height = config_data['limelight']['mount_height']
 

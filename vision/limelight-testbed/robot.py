@@ -14,81 +14,91 @@ from components.neo import Neo
 from components.shooter import Shooter
 
 from config import load_config_file
+from dash import put_tuple
+from oi import DriverController, SysopController
 
 config_data = load_config_file()
 
+subsystems_enabled = {
+    "limelight": "limelight" in config_data['enabled_devices'],
+    "navx": "navx" in config_data['enabled_devices'],
+    "shooter": "shooter" in config_data['enabled_devices'],
+    "neo": "neo" in config_data['enabled_devices'],
+    "camera": "camera" in config_data['enabled_devices']
+}
+
 class Robot(magicbot.MagicRobot):
-    if "limelight" in config_data['enabled_devices']:
+    if subsystems_enabled['limelight']:
         limelight_component: Limelight
     
-    if "navx" in config_data['enabled_devices']:
+    if subsystems_enabled['navx']:
         navx_component: NavX
 
-    if "shooter" in config_data['enabled_devices']:
+    if subsystems_enabled['shooter']:
         shooter_component: Shooter
     
-    if "neo" in config_data['enabled_devices']:
+    if subsystems_enabled['neo']:
         neo_component: Neo
 
     def createObjects(self):
-        if "shooter" in config_data['enabled_devices']:
+        if subsystems_enabled['limelight']:
+            self.limelight_table = NetworkTables.getTable("limelight")
+
+        if subsystems_enabled['navx']:
+            self.navx = navx.AHRS.create_spi()
+
+        if subsystems_enabled['shooter']:
             self.shooter_srx_a = WPI_TalonSRX(1)
             self.shooter_srx_b = WPI_TalonSRX(2)
         
-        if "neo" in config_data['enabled_devices']:
+        if subsystems_enabled['neo']:
             self.neo_motor = CANSparkMax(3, MotorType.kBrushless)
 
-        if "navx" in config_data['enabled_devices']:
-            self.navx = navx.AHRS.create_spi()
-
-        if "camera" in config_data['enabled_devices']:
+        if subsystems_enabled['camera']:
             wpilib.CameraServer.launch()
 
-        self.controller = wpilib.XboxController(0)
+        self.driver = DriverController(wpilib.XboxController(0))
+        self.sysop = SysopController(wpilib.XboxController(1))
 
     def reset_subsystems(self):
-        if "limelight" in config_data['enabled_devices']:
+        if subsystems_enabled["limelight"]:
             self.limelight_component.reset()
 
-        if "navx" in config_data['enabled_devices']:
+        if subsystems_enabled["navx"]:
             self.navx_component.reset()
 
-        if "shooter" in config_data['enabled_devices']:
+        if subsystems_enabled["shooter"]:
             self.shooter_component.reset()
 
-        if "neo" in config_data['enabled_devices']:
+        if subsystems_enabled["neo"]:
             self.neo_component.reset()
         
     def teleopInit(self):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        if "shooter" in config_data['enabled_devices']:
-            shooter_power = -self.controller.getY(hand=self.controller.Hand.kRight)
-            if self.controller.getAButton():
-                shooter_power = -1
-            self.shooter_component.power = shooter_power
-
-        if "neo" in config_data['enabled_devices']:
-            neo_power = self.controller.getY(hand=self.controller.Hand.kLeft)
-            self.neo_component.power = neo_power
-
-        if "limelight" in config_data['enabled_devices']:
+        if subsystems_enabled["limelight"]:
             dash.putNumber("Trig Calculated Distance: ", self.limelight_component.get_distance_trig(
                 config_data['limelight']['target_height']
             ))
 
-        if "navx" in config_data['enabled_devices']:
-            if self.controller.getXButtonPressed():
+        if subsystems_enabled["navx"]:
+            if self.driver.get_navx_reset():
                 self.navx_component.reset()
-            dx, dy, dz = self.navx_component.displacement
-            dash.putString("Displacement", f"{int(dx)}, {int(dy)}, {int(dz)}")
+            put_tuple("Displacement", self.navx_component.displacement, int)
+            put_tuple("Velocity", self.navx_component.velocity, int)
+            put_tuple("Acceleration", self.navx_component.acceleration, int)
 
-            vx, vy, vz = self.navx_component.velocity
-            dash.putString("Velocity", f"{int(vx)}, {int(vy)}, {int(vz)}")
-            
-            ax, ay, az = self.navx_component.acceleration
-            dash.putString("Acceleration", f"{int(ax)}, {int(ay)}, {int(az)}")
+        if subsystems_enabled["shooter"]:
+            shooter_power = -self.driver.get_shooter_axis()
+            if self.driver.get_shooter_full():
+                shooter_power = -1
+            self.shooter_component.power = shooter_power
+
+        if subsystems_enabled["neo"]:
+            neo_power = self.driver.get_neo_axis()
+            self.neo_component.power = neo_power
+
 
 if __name__ == '__main__':
     wpilib.run(Robot)
