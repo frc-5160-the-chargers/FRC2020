@@ -56,5 +56,8 @@ class Robot(magicbot.MagicRobot):
         driver_x, driver_y = self.driver.get_driver_input_curvature()
         self.drivetrain_component.curvature_drive(driver_y, driver_x)
 
+        if self.driver.get_update_pid_pressed():
+            self.drivetrain_component.update_pid_dash()
+
 if __name__ == '__main__':
     wpilib.run(Robot)

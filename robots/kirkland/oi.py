@@ -18,10 +18,13 @@ class DriverController:
         x = self.driver_controller.getX()
         y = self.driver_controller.getY(XboxController.Hand.kLeft)
 
-        x = math.copysign(deadzone(x, RobotMap.OI.driver_deadband) ** 2, x)
+        x = -math.copysign(deadzone(x, RobotMap.OI.driver_deadband) ** 2, x)
         y = math.copysign(deadzone(y, RobotMap.OI.driver_deadband) ** 2, y)
 
         return x, y
+
+    def get_update_pid_pressed(self):
+        return self.driver_controller.getXButtonPressed()
 
 class SysopController:
     def __init__(self, controller):

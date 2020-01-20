@@ -60,6 +60,8 @@ class Robot(magicbot.MagicRobot):
         self.driver = DriverController(wpilib.XboxController(0))
         self.sysop = SysopController(wpilib.XboxController(1))
 
+        dash.putNumber("Shooter Power", 0)
+
     def reset_subsystems(self):
         if subsystems_enabled["limelight"]:
             self.limelight_component.reset()
@@ -96,7 +98,8 @@ class Robot(magicbot.MagicRobot):
             self.shooter_component.power = shooter_power
 
         if subsystems_enabled["neo"]:
-            neo_power = self.driver.get_neo_axis()
+            # neo_power = self.driver.get_neo_axis() ** 3
+            neo_power = dash.getNumber("Shooter Power", 0)
             self.neo_component.power = neo_power
 
 

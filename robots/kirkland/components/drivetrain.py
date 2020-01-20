@@ -7,7 +7,7 @@ from ctre import WPI_TalonSRX
 from navx import AHRS
 
 from robotmap import RobotMap
-from dash import get_pid
+from dash import get_pid, push_pid
 from components.navx import NavX
 
 import math
@@ -175,6 +175,10 @@ class Drivetrain:
 
         self.turn_pid_values.update_controller(self.turn_pid)
         self.position_pid_values.update_controller(self.position_pid)
+
+    def push_pid_dash(self):
+        push_pid(RobotMap.Drivetrain.turn_pid_key, self.turn_pid_values)
+        push_pid(RobotMap.Drivetrain.position_pid_key, self.position_pid_values)
 
     def reset(self):
         self.turn_pid.reset()
