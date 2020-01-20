@@ -12,6 +12,7 @@ from components.drivetrain import Drivetrain, Powertrain, Encoders
 from components.navx import NavX
 
 from utils import config_talon
+from oi import DriverController, SysopController
 from robotmap import RobotMap
 
 class Robot(magicbot.MagicRobot):
@@ -42,6 +43,9 @@ class Robot(magicbot.MagicRobot):
 
         self.navx = navx.AHRS.create_spi()
 
+        self.driver = DriverController(wpilib.XboxController(0))
+        self.sysop = SysopController(wpilib.XboxController(1))
+
     def reset_subsystems(self):
         self.drivetrain_component.reset()
 
@@ -49,7 +53,8 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        pass
+        driver_x, driver_y = self.driver.get_driver_input_curvature()
+        self.drivetrain_component.curvature_drive(driver_y, driver_x)
 
 if __name__ == '__main__':
     wpilib.run(Robot)

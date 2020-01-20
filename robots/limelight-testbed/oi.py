@@ -1,7 +1,7 @@
 from wpilib import XboxController
 
 def deadzone(i, dz):
-    return i if i > abs(dz) else 0
+    return i if abs(i) > dz else 0
 
 class DriverController:
     def __init__(self, controller):
