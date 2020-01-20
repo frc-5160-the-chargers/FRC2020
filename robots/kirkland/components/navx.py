@@ -1,15 +1,12 @@
 import navx
 
-from config import load_config_file
-
-config_data = load_config_file()
+from robotmap import RobotMap
 
 class NavX:
     navx: navx.AHRS
 
     def __init__(self):
         self.samples = []
-        self.samples_holding = config_data['subsystem_config']['navx']['samples_taking']
 
     def reset(self):
         self.navx.reset()
@@ -21,5 +18,5 @@ class NavX:
 
     def execute(self):
         self.samples.append(self.navx.getAngle())
-        if len(self.samples) > self.samples_holding:
+        if len(self.samples) > RobotMap.NavX.samples_taking:
             self.samples = self.samples[1:]

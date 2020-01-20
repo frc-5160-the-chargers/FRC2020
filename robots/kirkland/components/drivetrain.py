@@ -1,19 +1,21 @@
-from magicbot import tunable
+from magicbot import tunable, StateMachine, state
 
-from wpilib import SpeedControllerGroup
+from wpilib import SpeedControllerGroup, PIDController
 from wpilib.drive import DifferentialDrive
 
 from ctre import WPI_TalonSRX
-
 from navx import AHRS
 
-from config import load_config_file
-
+from robotmap import RobotMap
+from dash import get_pid
 from components.navx import NavX
 
 import math
 
-config_data = load_config_file()
+class EncoderSide:
+    LEFT = 0
+    RIGHT = 1
+    AVERAGE = 2
 
 class Encoders:
     encoder_left: WPI_TalonSRX
@@ -23,33 +25,31 @@ class Encoders:
         pass
 
     def convert_ticks_meter(self, i):
-        ticks_rotation = config_data['constants']['ticks_per_rotation']
-        wheel_diam = config_data['constants']['wheel_diameter']
-        circ = math.pi * 2 * wheel_diam
-        return i / ticks_rotation * circ
+        circ = math.pi * 2 * RobotMap.Encoders.wheel_diameter
+        return i / RobotMap.Encoders.ticks_per_rotation * circ
 
-    def get_position(self, side="average"):
-        assert (side in ["left", "right", "average"]), "Invalid encoder side"
-        if side == "left":
+    def get_position(self, side=EncoderSide.AVERAGE):
+        assert (side in [Encoders.Side.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
+        if side == EncoderSide.LEFT:
             return self.convert_ticks_meter(self.encoder_left.getQuadraturePosition())
-        elif side == "right":
+        elif side == EncoderSide.RIGHT:
             return self.convert_ticks_meter(self.encoder_right.getQuadraturePosition())
-        elif side == "average":
+        elif side == EncoderSide.AVERAGE:
             return self.convert_ticks_meter(
                 (self.encoder_left.getQuadraturePosition() + self.encoder_right.getQuadraturePosition()) / 2
             )
-    
-    def get_velocity(self, side="average"):
-        assert (side in ["left", "right", "average"]), "Invalid encoder side"
-        if side == "left":
+            
+    def get_velocity(self, side=EncoderSide.AVERAGE):
+        assert (side in [EncoderSide.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
+        if side == EncoderSide.LEFT:
             return self.convert_ticks_meter(self.encoder_left.getQuadratureVelocity())
-        elif side == "right":
+        elif side == EncoderSide.RIGHT:
             return self.convert_ticks_meter(self.encoder_right.getQuadratureVelocity())
-        elif side == "average":
+        elif side == EncoderSide.AVERAGE:
             return self.convert_ticks_meter(
                 (self.encoder_left.getQuadratureVelocity() + self.encoder_right.getQuadratureVelocity()) / 2
             )
-
+    
     def reset(self):
         self.reset_encoder_positions()
 
@@ -60,6 +60,11 @@ class Encoders:
     def execute(self):
         pass
 
+class PowertrainMode:
+    CURVATURE = 0
+    TANK = 1
+    ARCADE = 2
+
 class Powertrain:
     motors_left: SpeedControllerGroup
     motors_right: SpeedControllerGroup
@@ -69,82 +74,158 @@ class Powertrain:
         self.power = 0
         self.rotation = 0
 
-    def configure_motors(self, motor_list=[]):
-        if motor_list == []:
-            self.configure_motors(motors_list=self.motors_left.speedControllers)
-            self.configure_motors(motors_list=self.motors_right.speedControllers)
-            return
-        for motor in motor_list:
-            assert type(motor) == WPI_TalonSRX, "Motor controller is not TalonSRX"
-            motor: WPI_TalonSRX
-            
-            motor.enableVoltageCompensation(True)
-            motor.configVoltageCompSaturation(config_data['motor_config']['drivetrain']['voltage_saturation'])
-            
-            motor.enableCurrentLimit(True)
-            motor.configPeakCurrentLimit(config_data['motor_config']['drivetrain']['peak_current'])
-            motor.configContinuousCurrentLimit(config_data['motor_config']['drivetrain']['continuous_current'])
+        self.left_power = 0
+        self.right_power = 0
 
-            motor.controlMode = motor.ControlMode.PercentOutput
+        self.current_state = PowertrainMode.CURVATURE
 
-            default_mode = config_data['motor_config']['drivetrain']['default_mode']
-            assert (default_mode in ['break', 'coast']), 'Drivetrain defalt mode not valid'
-            motor.setNeutralMode({
-                'break': motor.NeutralMode.Brake,
-                'coast': motor.NeutralMode.Coast
-            }[default_mode])
-
-            motor.configNeutralDeadband(config_data['motor_config']['drivetrain']['deadband'])
-        
-    def drive(self, power, rotation):
+    def drive_curvature(self, power, rotation):
         self.power = power
         self.rotation = rotation
+
+        self.current_state = PowertrainMode.CURVATURE
+
+        self.left_power = 0
+        self.right_power = 0
+    
+    def drive_tank(self, left_power, right_power):
+        self.left_power = left_power
+        self.right_power = right_power
+
+        self.current_state = PowertrainMode.TANK
+
+        self.power = 0
+        self.rotation = 0
+
+    def drive_arcade(self, power, rotation):
+        self.power = power
+        self.rotation = rotation
+
+        self.current_state = PowertrainMode.ARCADE
+
+        self.left_power = 0
+        self.right_power = 0
+
+    def set_arcade_turning_speed(self, rotation):
+        self.rotation = rotation
+
+        self.current_state = PowertrainMode.ARCADE
+
+        self.left_power = 0
+        self.right_power = 0
+
+    def set_arcade_power(self, power):
+        self.power = power
+        
+        self.current_state = PowertrainMode.ARCADE
+
+        self.left_power = 0
+        self.right_power = 0
 
     def reset(self):
         self.power = 0
         self.rotation = 0
 
+        self.left_power = 0
+        self.right_power = 0
+
+        self.current_state = PowertrainMode.CURVATURE
+
     def execute(self):
-        self.drivetrain.curvatureDrive(self.power, self.rotation, False)
+        if self.current_state == PowertrainMode.CURVATURE:
+            self.drivetrain.curvatureDrive(self.power, self.rotation, False)
+        
+        if self.current_state == PowertrainMode.TANK:
+            self.drivetrain.tankDrive(self.left_power, self.right_power, False)
+
+        if self.current_state == PowertrainMode.ARCADE:
+            self.drivetrain.arcadeDrive(self.power, self.rotation, False)
     
+class DriveMode:
+    MANUAL_DRIVE = 0
+    AIDED_TURN = 1
+    PID_TURN = 2
+    PID_DRIVE = 3
+
 class Drivetrain:
     powertrain: Powertrain
     encoders: Encoders
 
     navx_component: NavX
-
-    DRIVE_STRAIGHT = 0
-    DRIVE_TURN = 1
-
-    turn_hold_kP = tunable(default=0)
-
+    
     def __init__(self):
-        self.rotation_deadband = config_data['subsystem_config']['drivetrain']['rotation_deadzone']
+        self.turn_pid_values = RobotMap.Drivetrain.turn_pid
+        self.position_pid_values = RobotMap.Drivetrain.position_pid
 
-        self.drive_mode = Drivetrain.DRIVE_STRAIGHT
-        self.angle_hold = 0
+        self.turn_pid = PIDController(0, 0, 0, self.get_heading, lambda x: self.powertrain.set_arcade_turning_speed(x))
+        self.turn_pid_values.update_controller(self.turn_pid)
+        self.turn_pid.setOutputRange(-1, 1)
+        self.turn_pid.setPercentTolerance(5)
+
+        self.position_pid = PIDController(0, 0, 0, self.get_position, lambda x: self.powertrain.set_arcade_power(x))
+        self.position_pid_values.update_controller(self.position_pid)
+        self.position_pid.setOutputRange(-1, 1)
+        self.position_pid.setPercentTolerance(5)
+
+        self.drive_mode = DriveMode.MANUAL_DRIVE
+
+    def update_pid_dash(self):
+        self.turn_pid_values = get_pid(RobotMap.Drivetrain.turn_pid_key)
+        self.position_pid_values = get_pid(RobotMap.Drivetrain.position_pid_key)
+
+        self.turn_pid_values.update_controller(self.turn_pid)
+        self.position_pid_values.update_controller(self.position_pid)
 
     def reset(self):
+        self.turn_pid.reset()
+        self.position_pid.reset()
+
         self.powertrain.reset()
         self.encoders.reset()
 
-        self.drive_mode = Drivetrain.DRIVE_STRAIGHT
-        self.angle_hold = 0
-
         self.navx_component.reset()
 
-    def drive(self, power, rotation):
-        if self.drive_mode == Drivetrain.DRIVE_STRAIGHT and abs(rotation) > self.rotation_deadband:
-            self.drive_mode = Drivetrain.DRIVE_TURN
-        if self.drive_mode == Drivetrain.DRIVE_TURN and abs(rotation) < self.rotation_deadband:
-            self.drive_mode = Drivetrain.DRIVE_STRAIGHT
-            self.angle_hold = self.navx_component.get_angle()
+        self.drive_mode = DriveMode.MANUAL_DRIVE
 
-        if self.drive_mode == Drivetrain.DRIVE_STRAIGHT:
-            angle_difference = self.navx_component.get_angle() - self.angle_hold
-            self.powertrain.drive(power, angle_difference*self.turn_hold_kP)
-        elif self.drive_mode == Drivetrain.DRIVE_TURN:
-            self.powertrain.drive(power, rotation)
+    def get_heading(self):
+        return self.navx_component.get_angle()
+
+    def get_position(self):
+        return self.encoders.get_position()
+
+    def get_pid_on_point(self):
+        return (
+            (self.turn_pid.onTarget() if self.turn_pid.isEnabled() else True) and
+            (self.position_pid.onTarget() if self.position_pid.isEnabled() else True)
+        )
+
+    def stop_pid_controllers(self):
+        self.turn_pid.disable()
+        self.position_pid.disable()
+
+    def tank_drive(self, left_power, right_power):
+        self.stop_pid_controllers()
+        self.drive_mode = DriveMode.MANUAL_DRIVE
+        self.powertrain.drive_tank(left_power, right_power)
+
+    def curvature_drive(self, power, rotation):
+        self.stop_pid_controllers()
+        self.drive_mode = DriveMode.MANUAL_DRIVE
+        self.powertrain.drive_curvature(power, rotation)
+
+    def turn_to_angle(self, angle):
+        if self.drive_mode != DriveMode.PID_TURN:
+            self.stop_pid_controllers()
+            self.drive_mode = DriveMode.PID_TURN
+            self.turn_pid.setSetpoint(angle)
+            self.turn_pid.enable()
+
+    def drive_to_position(self, position):
+        if self.drive_mode != DriveMode.PID_DRIVE:
+            self.stop_pid_controllers()
+            self.drive_mode = DriveMode.PID_DRIVE
+            self.position_pid.setSetpoint(position)
+            self.position_pid.enable()
 
     def execute(self):
         pass
