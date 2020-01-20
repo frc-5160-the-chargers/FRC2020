@@ -11,5 +11,5 @@ limelight: {
 enabled_devices: [
     "shooter",
     "neo",
-    "limelight"
+    "camera"
 ]
