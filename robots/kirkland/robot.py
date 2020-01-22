@@ -9,7 +9,7 @@ from ctre import WPI_TalonSRX
 import navx
 
 from components.drivetrain import Drivetrain, Powertrain, Encoders
-from components.navx import NavX
+from components.navx_component import NavX
 
 from utils import config_talon
 from oi import DriverController, SysopController

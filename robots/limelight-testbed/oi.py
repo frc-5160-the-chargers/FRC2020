@@ -25,6 +25,9 @@ class DriverController:
             0.1
         )
 
+    def get_update_telemetry(self):
+        return self.driver_controller.getAButtonPressed()
+
 class SysopController:
     def __init__(self, controller):
         self.sysop_controller = controller
