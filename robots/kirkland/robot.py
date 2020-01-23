@@ -8,7 +8,7 @@ from ctre import WPI_TalonSRX
 
 import navx
 
-from components.drivetrain import Drivetrain, Powertrain, Encoders
+from components.drivetrain import Drivetrain, Powertrain, Encoders, DriveMode
 from components.navx_component import NavX
 
 from utils import config_talon
@@ -37,6 +37,7 @@ class Robot(magicbot.MagicRobot):
             config_talon(motor, RobotMap.Drivetrain.motor_config)
 
         self.drivetrain = wpilib.drive.DifferentialDrive(self.motors_left, self.motors_right)
+        self.drivetrain.setMaxOutput(RobotMap.Drivetrain.max_motor_power)
     
         self.encoder_left = WPI_TalonSRX(RobotMap.Encoders.left_encoder)
         self.encoder_right = WPI_TalonSRX(RobotMap.Encoders.right_encoder)
@@ -53,8 +54,25 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        driver_x, driver_y = self.driver.get_driver_input_curvature()
-        self.drivetrain_component.curvature_drive(driver_y, driver_x)
+        if self.driver.get_update_telemetry():
+            dash.putNumber("Target Angle", 0)
+            dash.putNumber("Target Position", 0)
+            self.drivetrain_component.push_pid_dash()
+
+        if self.driver.get_toggle_pid_control():
+            self.drivetrain_component.turn_to_angle(dash.getNumber("Target Angle", 0))
+        if self.driver.get_manual_control_override():
+            self.drivetrain_component.drive_mode = DriveMode.MANUAL_DRIVE
+
+        if self.drivetrain_component.drive_mode == DriveMode.MANUAL_DRIVE:
+            driver_x, driver_y = self.driver.get_driver_input_curvature()
+            self.drivetrain_component.curvature_drive(driver_y, driver_x)
+        elif self.drivetrain_component.drive_mode == DriveMode.PID_TURN:
+            self.drivetrain_component.turn_to_angle(dash.getNumber("Target Angle", 0))
+        elif self.drivetrain_component.drive_mode == DriveMode.PID_DRIVE:
+            self.drivetrain_component.drive_to_position(dash.getNumber("Target Position", 0))
+
+        dash.putNumber("NavX Angle", self.navx_component.get_angle())
 
         if self.driver.get_update_pid_pressed():
             self.drivetrain_component.update_pid_dash()

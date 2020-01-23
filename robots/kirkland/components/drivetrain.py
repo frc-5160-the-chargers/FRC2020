@@ -29,7 +29,7 @@ class Encoders:
         return i / RobotMap.Encoders.ticks_per_rotation * circ
 
     def get_position(self, side=EncoderSide.AVERAGE):
-        assert (side in [Encoders.Side.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
+        assert (side in [EncoderSide.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
         if side == EncoderSide.LEFT:
             return self.convert_ticks_meter(self.encoder_left.getQuadraturePosition())
         elif side == EncoderSide.RIGHT:
@@ -133,7 +133,7 @@ class Powertrain:
 
     def execute(self):
         if self.current_state == PowertrainMode.CURVATURE:
-            self.drivetrain.curvatureDrive(self.power, self.rotation, False)
+            self.drivetrain.curvatureDrive(self.power, self.rotation, True)
         
         if self.current_state == PowertrainMode.TANK:
             self.drivetrain.tankDrive(self.left_power, self.right_power, False)
@@ -220,6 +220,7 @@ class Drivetrain:
     def turn_to_angle(self, angle):
         if self.drive_mode != DriveMode.PID_TURN:
             self.stop_pid_controllers()
+            self.navx_component.reset()
             self.drive_mode = DriveMode.PID_TURN
             self.turn_pid.setSetpoint(angle)
             self.turn_pid.enable()
@@ -227,6 +228,7 @@ class Drivetrain:
     def drive_to_position(self, position):
         if self.drive_mode != DriveMode.PID_DRIVE:
             self.stop_pid_controllers()
+            self.encoders.reset()
             self.drive_mode = DriveMode.PID_DRIVE
             self.position_pid.setSetpoint(position)
             self.position_pid.enable()

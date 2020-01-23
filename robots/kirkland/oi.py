@@ -26,6 +26,15 @@ class DriverController:
     def get_update_pid_pressed(self):
         return self.driver_controller.getXButtonPressed()
 
+    def get_toggle_pid_control(self):
+        return self.driver_controller.getAButtonPressed()
+
+    def get_manual_control_override(self):
+        return self.driver_controller.getBButtonPressed()
+
+    def get_update_telemetry(self):
+        return self.driver_controller.getYButtonPressed()
+
 class SysopController:
     def __init__(self, controller):
         self.sysop_controller = controller

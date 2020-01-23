@@ -13,12 +13,16 @@ class PIDValue:
         controller.D = self.d
 
 class MotorConfig:
-    def __init__(self, voltage_saturation, deadband, peak_current, continuous_current, default_mode):
+    def __init__(self, voltage_saturation, deadband, peak_current, continuous_current, default_mode, ramp_rate):
         self.voltage_saturation = voltage_saturation
         self.deadband = deadband
         self.peak_current = peak_current
         self.continuous_current = continuous_current
         self.default_mode = default_mode
+        self.ramp_rate = ramp_rate
+
+def clamp(i, mi, ma):
+    return min(ma, max(mi, i))
 
 def config_talon(talon: WPI_TalonSRX, motor_config: MotorConfig) -> None:
     talon.enableVoltageCompensation(True)
@@ -31,3 +35,5 @@ def config_talon(talon: WPI_TalonSRX, motor_config: MotorConfig) -> None:
     talon.setNeutralMode(motor_config.default_mode)
 
     talon.configNeutralDeadband(motor_config.deadband)
+
+    talon.configOpenLoopRamp(motor_config.ramp_rate)

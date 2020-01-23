@@ -27,10 +27,13 @@ class RobotMap:
             deadband=.025,
             peak_current=100,
             continuous_current=40,
-            default_mode=WPI_TalonSRX.NeutralMode.Brake
+            default_mode=WPI_TalonSRX.NeutralMode.Brake,
+            ramp_rate=.5
         )
 
-        turn_pid = PIDValue(0, 0, 0)
+        max_motor_power = .3
+
+        turn_pid = PIDValue(-0.035, 0, -0.15)
         turn_pid_key = "Drivetrain Turn PID"
 
         position_pid = PIDValue(0, 0, 0)

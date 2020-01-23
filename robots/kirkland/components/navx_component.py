@@ -10,6 +10,7 @@ class NavX:
 
     def reset(self):
         self.navx.reset()
+        self.samples = []
 
     def get_angle(self):
         if len(self.samples) == 0:
