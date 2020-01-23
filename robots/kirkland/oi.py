@@ -25,6 +25,9 @@ class DriverController:
 
     def get_update_pid_pressed(self):
         return self.driver_controller.getXButtonPressed()
+    
+    def get_toggle_pid_type_pressed(self):
+        return self.driver_controller.getBackButtonPressed()
 
     def get_toggle_pid_control(self):
         return self.driver_controller.getAButtonPressed()

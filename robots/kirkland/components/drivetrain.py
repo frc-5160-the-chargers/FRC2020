@@ -26,28 +26,28 @@ class Encoders:
 
     def convert_ticks_meter(self, i):
         circ = math.pi * 2 * RobotMap.Encoders.wheel_diameter
-        return i / RobotMap.Encoders.ticks_per_rotation * circ
+        return i / RobotMap.Encoders.ticks_per_rotation * circ / RobotMap.Encoders.output_gear_ratio
 
     def get_position(self, side=EncoderSide.AVERAGE):
         assert (side in [EncoderSide.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
         if side == EncoderSide.LEFT:
-            return self.convert_ticks_meter(self.encoder_left.getQuadraturePosition())
+            return -self.convert_ticks_meter(self.encoder_left.getQuadraturePosition())
         elif side == EncoderSide.RIGHT:
             return self.convert_ticks_meter(self.encoder_right.getQuadraturePosition())
         elif side == EncoderSide.AVERAGE:
             return self.convert_ticks_meter(
-                (self.encoder_left.getQuadraturePosition() + self.encoder_right.getQuadraturePosition()) / 2
+                (-self.encoder_left.getQuadraturePosition() + self.encoder_right.getQuadraturePosition()) / 2
             )
             
     def get_velocity(self, side=EncoderSide.AVERAGE):
         assert (side in [EncoderSide.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
         if side == EncoderSide.LEFT:
-            return self.convert_ticks_meter(self.encoder_left.getQuadratureVelocity())
+            return -self.convert_ticks_meter(self.encoder_left.getQuadratureVelocity())
         elif side == EncoderSide.RIGHT:
             return self.convert_ticks_meter(self.encoder_right.getQuadratureVelocity())
         elif side == EncoderSide.AVERAGE:
             return self.convert_ticks_meter(
-                (self.encoder_left.getQuadratureVelocity() + self.encoder_right.getQuadratureVelocity()) / 2
+                (-self.encoder_left.getQuadratureVelocity() + self.encoder_right.getQuadratureVelocity()) / 2
             )
     
     def reset(self):
@@ -157,15 +157,19 @@ class Drivetrain:
         self.turn_pid_values = RobotMap.Drivetrain.turn_pid
         self.position_pid_values = RobotMap.Drivetrain.position_pid
 
-        self.turn_pid = PIDController(0, 0, 0, self.get_heading, lambda x: self.powertrain.set_arcade_turning_speed(x))
+        self.turn_pid = PIDController(0, 0, 0, self.get_heading, lambda x: self.powertrain.set_arcade_turning_speed(
+            math.copysign(RobotMap.Drivetrain.kF_turn, x) + x
+        ))
         self.turn_pid_values.update_controller(self.turn_pid)
         self.turn_pid.setOutputRange(-1, 1)
-        self.turn_pid.setPercentTolerance(5)
+        self.turn_pid.setPercentTolerance(1)
 
-        self.position_pid = PIDController(0, 0, 0, self.get_position, lambda x: self.powertrain.set_arcade_power(x))
+        self.position_pid = PIDController(0, 0, 0, self.get_position, lambda x: self.powertrain.set_arcade_power(
+            math.copysign(RobotMap.Drivetrain.kF_straight, x) + x
+        ))
         self.position_pid_values.update_controller(self.position_pid)
         self.position_pid.setOutputRange(-1, 1)
-        self.position_pid.setPercentTolerance(5)
+        self.position_pid.setPercentTolerance(1)
 
         self.drive_mode = DriveMode.MANUAL_DRIVE
 

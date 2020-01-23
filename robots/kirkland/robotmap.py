@@ -14,6 +14,7 @@ class RobotMap:
         right_encoder = 2
 
         ticks_per_rotation = 4096
+        output_gear_ratio = 12
         wheel_diameter = 6
 
     class Drivetrain:
@@ -24,12 +25,15 @@ class RobotMap:
 
         motor_config = MotorConfig(
             voltage_saturation=11,
-            deadband=.025,
+            deadband=0,
             peak_current=100,
             continuous_current=40,
             default_mode=WPI_TalonSRX.NeutralMode.Brake,
-            ramp_rate=.5
+            ramp_rate=.5,
         )
+
+        kF_turn = .3
+        kF_straight = .15
 
         max_motor_power = .3
 

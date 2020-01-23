@@ -47,6 +47,8 @@ class Robot(magicbot.MagicRobot):
         self.driver = DriverController(wpilib.XboxController(0))
         self.sysop = SysopController(wpilib.XboxController(1))
 
+        self.pid_mode = DriveMode.PID_TURN
+
     def reset_subsystems(self):
         self.drivetrain_component.reset()
 
@@ -60,9 +62,18 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain_component.push_pid_dash()
 
         if self.driver.get_toggle_pid_control():
-            self.drivetrain_component.turn_to_angle(dash.getNumber("Target Angle", 0))
+            if self.pid_mode == DriveMode.PID_TURN:
+                self.drivetrain_component.turn_to_angle(dash.getNumber("Target Angle", 0))
+            if self.pid_mode == DriveMode.PID_DRIVE:
+                self.drivetrain_component.drive_to_position(dash.getNumber("Target Position", 0))
         if self.driver.get_manual_control_override():
             self.drivetrain_component.drive_mode = DriveMode.MANUAL_DRIVE
+
+        if self.driver.get_toggle_pid_type_pressed():
+            self.pid_mode = {
+                DriveMode.PID_TURN: DriveMode.PID_DRIVE,
+                DriveMode.PID_DRIVE: DriveMode.PID_TURN
+            }[self.pid_mode]
 
         if self.drivetrain_component.drive_mode == DriveMode.MANUAL_DRIVE:
             driver_x, driver_y = self.driver.get_driver_input_curvature()
@@ -73,6 +84,12 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain_component.drive_to_position(dash.getNumber("Target Position", 0))
 
         dash.putNumber("NavX Angle", self.navx_component.get_angle())
+        dash.putNumber("Drivetrain Position", self.drivetrain_component.get_position())
+
+        dash.putString("Current PID Mode", {
+            DriveMode.PID_DRIVE: "PID Drive",
+            DriveMode.PID_TURN: "PID Turn"
+        }[self.pid_mode])
 
         if self.driver.get_update_pid_pressed():
             self.drivetrain_component.update_pid_dash()
