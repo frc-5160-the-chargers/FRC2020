@@ -3,6 +3,14 @@ from wpilib import PIDController
 from utils import PIDValue
 from dash import get_pid, put_pid
 
+import math
+
+def ff_constant(constant, target, error):
+    return math.copysign(constant, error)
+
+def ff_flywheel(coefficient, target, error):
+    return target * coefficient
+
 class SuperPIDController:
     def __init__(self, pid_values: PIDValue, f_in, f_out, f_feedforwards=None, pid_key=None):
         self.ff_enabled = f_feedforwards != None
@@ -22,9 +30,15 @@ class SuperPIDController:
         self.pid_controller = PIDController(
             0, 0, 0,
             f_in,
-            lambda x: f_out(x + ff(x))
+            lambda x: f_out(x + ff(self.get_target(), x))
         )
         self.pid_values.update_controller(self.pid_controller)
+
+    def get_target(self):
+        if self.pid_controller.isEnabled():
+            return self.pid_controller.getSetpoint()
+        else:
+            return 0
 
     def configure_controller(self, output_range=(-1, 1), percent_tolerance=1):
         self.pid_controller.setOutputRange(output_range[0], output_range[1])

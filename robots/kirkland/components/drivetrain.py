@@ -10,7 +10,7 @@ from robotmap import RobotMap
 from dash import get_pid, put_pid
 from components.navx_component import NavX
 from kinematics import ArcDrive
-from pid import SuperPIDController
+from pid import SuperPIDController, ff_constant, ff_flywheel
 
 import math
 
@@ -181,7 +181,7 @@ class Drivetrain:
             pid_values=RobotMap.Drivetrain.turn_pid,
             f_in=self.get_heading,
             f_out=lambda x: self.powertrain.set_arcade_turning_speed(x),
-            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_turn, x),
+            f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_turn, target, error),
             pid_key=RobotMap.Drivetrain.turn_pid_key 
         )
         self.turn_pid.configure_controller(
@@ -193,7 +193,7 @@ class Drivetrain:
             pid_values=RobotMap.Drivetrain.position_pid,
             f_in=self.get_position,
             f_out=lambda x: self.powertrain.set_arcade_power(x),
-            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_straight, x),
+            f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_straight, target, error),
             pid_key=RobotMap.Drivetrain.position_pid_key
         )
         self.position_pid.configure_controller(
@@ -205,7 +205,7 @@ class Drivetrain:
             pid_values=RobotMap.Drivetrain.velocity_left,
             f_in=lambda: self.get_velocity(EncoderSide.LEFT),
             f_out=lambda x: self.powertrain.set_power_left(x),
-            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_straight, x),
+            f_feedforwards=lambda target, error: ff_flywheel(RobotMap.Drivetrain.kF_velocity, target, error),
             pid_key=RobotMap.Drivetrain.velocity_left_key
         )
         self.velocity_left_pid.configure_controller(
@@ -217,7 +217,7 @@ class Drivetrain:
             pid_values=RobotMap.Drivetrain.velocity_right,
             f_in=lambda: self.get_velocity(EncoderSide.RIGHT),
             f_out=lambda x: self.powertrain.set_power_right(x),
-            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_straight, x),
+            f_feedforwards=lambda target, error: ff_flywheel(RobotMap.Drivetrain.kF_velocity, target, error),
             pid_key=RobotMap.Drivetrain.velocity_right_key
         )
         self.velocity_right_pid.configure_controller(

@@ -31,6 +31,7 @@ class RobotMap:
 
         kF_turn = .3
         kF_straight = .15
+        kF_velocity = 0.2
 
         max_motor_power = .3
 
