@@ -15,7 +15,7 @@ class RobotMap:
 
         ticks_per_rotation = 4096
         output_gear_ratio = 12
-        wheel_diameter = 6
+        wheel_diameter = .1525
 
     class Drivetrain:
         enabled = True
@@ -40,8 +40,16 @@ class RobotMap:
         turn_pid = PIDValue(-0.035, 0, -0.15)
         turn_pid_key = "Drivetrain Turn PID"
 
-        position_pid = PIDValue(0, 0, 0)
+        position_pid = PIDValue(-0.035, 0, -0.15)
         position_pid_key = "Drivetrian Position PID"
+
+        velocity_left = PIDValue(0, 0, 0)
+        velocity_left_key = "Left Velocity PID"
+
+        velocity_right = PIDValue(0, 0, 0)
+        velocity_right_key = "Right Velocity PID"
+
+        wheelbase = .55
 
     class NavX:
         enabled = True

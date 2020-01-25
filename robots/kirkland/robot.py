@@ -8,12 +8,13 @@ from ctre import WPI_TalonSRX
 
 import navx
 
-from components.drivetrain import Drivetrain, Powertrain, Encoders, DriveMode
+from components.drivetrain import Drivetrain, Powertrain, Encoders, DriveMode, EncoderSide
 from components.navx_component import NavX
 
 from utils import config_talon
 from oi import DriverController, SysopController
 from robotmap import RobotMap
+from kinematics import ArcDrive
 
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
@@ -56,9 +57,24 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
+        arc = ArcDrive(
+            dash.getNumber("Arc Radius", 0),
+            dash.getNumber("Arc Distance", 0),
+            dash.getNumber("V_max", 0),
+            RobotMap.Drivetrain.wheelbase
+        )
+
         if self.driver.get_update_telemetry():
             dash.putNumber("Target Angle", 0)
             dash.putNumber("Target Position", 0)
+            
+            dash.putNumber("V_max", 0)
+            dash.putNumber("Arc Distance", 0)
+            dash.putNumber("Arc Radius", 0)
+
+            dash.putNumber("Target Velocity Left", 0)
+            dash.putNumber("Target Velocity Right", 0)
+            
             self.drivetrain_component.push_pid_dash()
 
         if self.driver.get_toggle_pid_control():
@@ -66,13 +82,16 @@ class Robot(magicbot.MagicRobot):
                 self.drivetrain_component.turn_to_angle(dash.getNumber("Target Angle", 0))
             if self.pid_mode == DriveMode.PID_DRIVE:
                 self.drivetrain_component.drive_to_position(dash.getNumber("Target Position", 0))
+            if self.pid_mode == DriveMode.VELOCITY_CONTROL:
+                self.drivetrain_component.velocity_control(dash.getNumber("Target Velocity Left", 0), dash.getNumber("Target Velocity Right", 0))
         if self.driver.get_manual_control_override():
             self.drivetrain_component.drive_mode = DriveMode.MANUAL_DRIVE
 
         if self.driver.get_toggle_pid_type_pressed():
             self.pid_mode = {
                 DriveMode.PID_TURN: DriveMode.PID_DRIVE,
-                DriveMode.PID_DRIVE: DriveMode.PID_TURN
+                DriveMode.PID_DRIVE: DriveMode.VELOCITY_CONTROL,
+                DriveMode.VELOCITY_CONTROL: DriveMode.PID_TURN
             }[self.pid_mode]
 
         if self.drivetrain_component.drive_mode == DriveMode.MANUAL_DRIVE:
@@ -82,13 +101,18 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain_component.turn_to_angle(dash.getNumber("Target Angle", 0))
         elif self.drivetrain_component.drive_mode == DriveMode.PID_DRIVE:
             self.drivetrain_component.drive_to_position(dash.getNumber("Target Position", 0))
+        elif self.drivetrain_component == DriveMode.VELOCITY_CONTROL:
+            self.drivetrain_component.velocity_control(dash.getNumber("Target Velocity Left", 0), dash.getNumber("Target Velocity Right", 0))
 
         dash.putNumber("NavX Angle", self.navx_component.get_angle())
         dash.putNumber("Drivetrain Position", self.drivetrain_component.get_position())
+        dash.putNumber("Current Left Velocity", self.encoders.get_velocity(EncoderSide.LEFT))
+        dash.putNumber("Current Right Velocity", self.encoders.get_velocity(EncoderSide.RIGHT))
 
         dash.putString("Current PID Mode", {
             DriveMode.PID_DRIVE: "PID Drive",
-            DriveMode.PID_TURN: "PID Turn"
+            DriveMode.PID_TURN: "PID Turn",
+            DriveMode.VELOCITY_CONTROL: "Velocity Control"
         }[self.pid_mode])
 
         if self.driver.get_update_pid_pressed():
