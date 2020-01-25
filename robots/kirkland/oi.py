@@ -23,13 +23,13 @@ class DriverController:
 
         return x, y
 
-    def get_update_pid_pressed(self):
+    def get_update_pid_dash(self):
         return self.driver_controller.getXButtonPressed()
     
     def get_toggle_pid_type_pressed(self):
         return self.driver_controller.getBackButtonPressed()
 
-    def get_toggle_pid_control(self):
+    def get_enable_pid(self):
         return self.driver_controller.getAButtonPressed()
 
     def get_manual_control_override(self):

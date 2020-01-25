@@ -8,18 +8,15 @@ class RobotMap:
         drivetrain_rotation_deadband = 0.1
 
     class Encoders:
-        enabled = True
-
         left_encoder = 5
         right_encoder = 2
 
         ticks_per_rotation = 4096
         output_gear_ratio = 12
         wheel_diameter = .1525
+        velocity_period = .1 # quadvelocity returns units per x seconds
 
     class Drivetrain:
-        enabled = True
-
         motors_left = [5, 6, 7]
         motors_right = [2, 3, 4]
 
@@ -52,6 +49,4 @@ class RobotMap:
         wheelbase = .55
 
     class NavX:
-        enabled = True
-
         samples_taking = 5

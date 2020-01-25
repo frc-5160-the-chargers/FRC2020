@@ -10,6 +10,7 @@ from robotmap import RobotMap
 from dash import get_pid, put_pid
 from components.navx_component import NavX
 from kinematics import ArcDrive
+from pid import SuperPIDController
 
 import math
 
@@ -29,9 +30,9 @@ class Encoders:
         circ = math.pi * 2 * RobotMap.Encoders.wheel_diameter
         return i / RobotMap.Encoders.ticks_per_rotation * circ / RobotMap.Encoders.output_gear_ratio
 
-    def convert_rpm_mps(self, i):
+    def convert_velocity_meters_per_second(self, i):
         circ = math.pi * 2 * RobotMap.Encoders.wheel_diameter
-        return i * circ / RobotMap.Encoders.output_gear_ratio / RobotMap.Encoders.ticks_per_rotation * 8.9 
+        return i * circ / RobotMap.Encoders.output_gear_ratio / RobotMap.Encoders.ticks_per_rotation / RobotMap.Encoders.velocity_period 
 
     def get_position(self, side=EncoderSide.AVERAGE):
         assert (side in [EncoderSide.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
@@ -47,11 +48,11 @@ class Encoders:
     def get_velocity(self, side=EncoderSide.AVERAGE):
         assert (side in [EncoderSide.LEFT, EncoderSide.RIGHT, EncoderSide.AVERAGE]), "Invalid encoder side"
         if side == EncoderSide.LEFT:
-            return -self.convert_rpm_mps(self.encoder_left.getQuadratureVelocity())
+            return -self.convert_velocity_meters_per_second(self.encoder_left.getQuadratureVelocity())
         elif side == EncoderSide.RIGHT:
-            return self.convert_rpm_mps(self.encoder_right.getQuadratureVelocity())
+            return self.convert_velocity_meters_per_second(self.encoder_right.getQuadratureVelocity())
         elif side == EncoderSide.AVERAGE:
-            return self.convert_rpm_mps(
+            return self.convert_velocity_meters_per_second(
                 (-self.encoder_left.getQuadratureVelocity() + self.encoder_right.getQuadratureVelocity()) / 2
             )
     
@@ -176,39 +177,60 @@ class Drivetrain:
     navx_component: NavX
     
     def __init__(self):
-        self.turn_pid_values = RobotMap.Drivetrain.turn_pid
-        self.position_pid_values = RobotMap.Drivetrain.position_pid
+        self.turn_pid = SuperPIDController(
+            pid_values=RobotMap.Drivetrain.turn_pid,
+            f_in=self.get_heading,
+            f_out=lambda x: self.powertrain.set_arcade_turning_speed(x),
+            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_turn, x),
+            pid_key=RobotMap.Drivetrain.turn_pid_key 
+        )
+        self.turn_pid.configure_controller(
+            output_range=(-1, 1),
+            percent_tolerance=1
+        )
 
-        self.velocity_left_values = RobotMap.Drivetrain.velocity_left
-        self.velocity_right_values = RobotMap.Drivetrain.velocity_right
+        self.position_pid = SuperPIDController(
+            pid_values=RobotMap.Drivetrain.position_pid,
+            f_in=self.get_position,
+            f_out=lambda x: self.powertrain.set_arcade_power(x),
+            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_straight, x),
+            pid_key=RobotMap.Drivetrain.position_pid_key
+        )
+        self.position_pid.configure_controller(
+            output_range=(-1, 1),
+            percent_tolerance=1
+        )
 
-        self.turn_pid = PIDController(0, 0, 0, self.get_heading, lambda x: self.powertrain.set_arcade_turning_speed(
-            math.copysign(RobotMap.Drivetrain.kF_turn, x) + x
-        ))
-        self.turn_pid_values.update_controller(self.turn_pid)
-        self.turn_pid.setOutputRange(-1, 1)
-        self.turn_pid.setPercentTolerance(1)
+        self.velocity_left_pid = SuperPIDController(
+            pid_values=RobotMap.Drivetrain.velocity_left,
+            f_in=lambda: self.get_velocity(EncoderSide.LEFT),
+            f_out=lambda x: self.powertrain.set_power_left(x),
+            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_straight, x),
+            pid_key=RobotMap.Drivetrain.velocity_left_key
+        )
+        self.velocity_left_pid.configure_controller(
+            output_range=(-1, 1),
+            percent_tolerance=1
+        )
 
-        self.position_pid = PIDController(0, 0, 0, self.get_position, lambda x: self.powertrain.set_arcade_power(
-            math.copysign(RobotMap.Drivetrain.kF_straight, x) + x
-        ))
-        self.position_pid_values.update_controller(self.position_pid)
-        self.position_pid.setOutputRange(-1, 1)
-        self.position_pid.setPercentTolerance(1)
+        self.velocity_right_pid = SuperPIDController(
+            pid_values=RobotMap.Drivetrain.velocity_right,
+            f_in=lambda: self.get_velocity(EncoderSide.RIGHT),
+            f_out=lambda x: self.powertrain.set_power_right(x),
+            f_feedforwards=lambda x: math.copysign(RobotMap.Drivetrain.kF_straight, x),
+            pid_key=RobotMap.Drivetrain.velocity_right_key
+        )
+        self.velocity_right_pid.configure_controller(
+            output_range=(-1, 1),
+            percent_tolerance=1
+        )
 
-        self.velocity_left_controller = PIDController(0, 0, 0, lambda: self.get_velocity(EncoderSide.LEFT), lambda x: self.powertrain.set_power_left(
-            math.copysign(RobotMap.Drivetrain.kF_straight, x) + x
-        ))
-        self.velocity_left_values.update_controller(self.velocity_left_controller)
-        self.velocity_left_controller.setOutputRange(-1, 1)
-        self.velocity_left_controller.setPercentTolerance(1)
-
-        self.velocity_right_controller = PIDController(0, 0, 0, lambda: self.get_velocity(EncoderSide.RIGHT), lambda x: self.powertrain.set_power_right(
-            math.copysign(RobotMap.Drivetrain.kF_straight, x) + x
-        ))
-        self.velocity_right_values.update_controller(self.velocity_right_controller)
-        self.velocity_right_controller.setOutputRange(-1, 1)
-        self.velocity_right_controller.setPercentTolerance(1)
+        self.pid_controllers = [
+            self.turn_pid,
+            self.position_pid,
+            self.velocity_left_pid,
+            self.velocity_right_pid
+        ]
 
         self.drive_mode = DriveMode.MANUAL_DRIVE
 
@@ -216,28 +238,16 @@ class Drivetrain:
         return self.encoders.get_velocity(side)
 
     def update_pid_dash(self):
-        self.turn_pid_values = get_pid(RobotMap.Drivetrain.turn_pid_key)
-        self.position_pid_values = get_pid(RobotMap.Drivetrain.position_pid_key)
-        self.velocity_left_values = get_pid(RobotMap.Drivetrain.velocity_left_key)
-        self.velocity_right_values = get_pid(RobotMap.Drivetrain.velocity_right_key)
-
-        self.turn_pid_values.update_controller(self.turn_pid)
-        self.position_pid_values.update_controller(self.position_pid)
-        self.velocity_left_values.update_controller(self.velocity_left_controller)
-        self.velocity_right_values.update_controller(self.velocity_right_controller)
+        for controller in self.pid_controllers:
+            controller.update_from_dash()
 
     def push_pid_dash(self):
-        put_pid(RobotMap.Drivetrain.turn_pid_key, self.turn_pid_values)
-        put_pid(RobotMap.Drivetrain.position_pid_key, self.position_pid_values)
-        put_pid(RobotMap.Drivetrain.velocity_left_key, self.velocity_left_values)
-        put_pid(RobotMap.Drivetrain.velocity_right_key, self.velocity_right_values)
+        for controller in self.pid_controllers:
+            controller.push_to_dash()
 
     def reset(self):
-        self.turn_pid.reset()
-        self.position_pid.reset()
-
-        self.velocity_left_controller.reset()
-        self.velocity_right_controller.reset()
+        for controller in self.pid_controllers:
+            controller.reset()
 
         self.powertrain.reset()
         self.encoders.reset()
@@ -253,16 +263,13 @@ class Drivetrain:
         return self.encoders.get_position()
 
     def get_pid_on_point(self):
-        return (
-            (self.turn_pid.onTarget() if self.turn_pid.isEnabled() else True) and
-            (self.position_pid.onTarget() if self.position_pid.isEnabled() else True)
-        )
+        return False not in set([
+            controller.get_on_target() for controller in self.pid_controllers
+        ])
 
     def stop_pid_controllers(self):
-        self.turn_pid.disable()
-        self.position_pid.disable()
-        self.velocity_left_controller.disable()
-        self.velocity_right_controller.disable()
+        for controller in self.pid_controllers:
+            controller.stop()
 
     def tank_drive(self, left_power, right_power):
         self.stop_pid_controllers()
@@ -279,26 +286,22 @@ class Drivetrain:
             self.stop_pid_controllers()
             self.navx_component.reset()
             self.drive_mode = DriveMode.PID_TURN
-            self.turn_pid.setSetpoint(angle)
-            self.turn_pid.enable()
+            self.turn_pid.run_setpoint(angle)
 
     def drive_to_position(self, position):
         if self.drive_mode != DriveMode.PID_DRIVE:
             self.stop_pid_controllers()
             self.encoders.reset()
             self.drive_mode = DriveMode.PID_DRIVE
-            self.position_pid.setSetpoint(position)
-            self.position_pid.enable()
+            self.position_pid.run_setpoint(position)
 
     def velocity_control(self, velocity_left, velocity_right):
         if self.drive_mode != DriveMode.VELOCITY_CONTROL:
             self.stop_pid_controllers()
             self.encoders.reset()
             self.drive_mode = DriveMode.VELOCITY_CONTROL
-            self.velocity_left_controller.setSetpoint(velocity_left)
-            self.velocity_right_controller.setSetpoint(velocity_right)
-            self.velocity_left_controller.enable()
-            self.velocity_right_controller.enable()            
+            self.velocity_left_pid.run_setpoint(velocity_left)
+            self.velocity_right_pid.run_setpoint(velocity_right)
 
     def arc_drive(self, constraints: ArcDrive):
         if constraints.valid:

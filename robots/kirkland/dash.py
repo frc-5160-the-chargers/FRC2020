@@ -15,3 +15,21 @@ def get_pid(key):
     i = dash.getNumber(f"{key}_kI", 0)
     d = dash.getNumber(f"{key}_kD", 0)
     return PIDValue(p, i, d)
+
+class Tunable:
+    def __init__(self, key, default_value=0):
+        self.value = default_value
+        self.key = key
+
+    def set(self, value):
+        self.value = value
+        dash.putNumber(self.key, value)
+
+    def get(self, default_value=None):
+        if default_value == None:
+            return dash.getNumber(self.key, self.value)
+        else:
+            return dash.getNumber(self.key, default_value)
+
+    def push(self):
+        dash.putNumber(self.key, self.value)
