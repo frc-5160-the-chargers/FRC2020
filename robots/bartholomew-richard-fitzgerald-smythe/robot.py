@@ -6,6 +6,7 @@ from wpilib import SmartDashboard as dash
 import magicbot
 
 from rev import CANSparkMax, MotorType
+from rev.color import ColorSensorV3
 
 import navx
 
@@ -15,12 +16,14 @@ from robotmap import RobotMap
 from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
-from components.sensors import Encoders, NavX
+from components.sensors import Encoders, NavX, WheelOfFortuneSensor
 
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
+
+    wheel_of_fortune_sensor: WheelOfFortuneSensor
 
     drivetrain: Drivetrain
 
@@ -46,6 +49,8 @@ class Robot(magicbot.MagicRobot):
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_a, RobotMap.Encoders.right_encoder_b)
 
         self.navx_ahrs = navx.AHRS.create_spi()
+
+        self.color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))

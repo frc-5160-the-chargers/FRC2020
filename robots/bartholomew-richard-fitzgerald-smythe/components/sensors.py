@@ -4,6 +4,7 @@ from navx import AHRS
 
 from utils import average
 from robotmap import RobotMap
+from rev.color import ColorSensorV3
 
 class EncoderSide:
     BOTH = 0
@@ -68,3 +69,12 @@ class NavX:
 
     def execute(self):
         pass
+
+class WheelOfFortuneSensor:
+    color_sensor: ColorSensorV3
+
+    def execute(self):
+        pass;
+
+    def get_rgb(self):
+        return self.color_sensor.getColor();
