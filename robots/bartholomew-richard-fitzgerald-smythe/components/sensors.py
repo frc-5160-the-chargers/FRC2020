@@ -72,10 +72,23 @@ class NavX:
 
 class WheelOfFortuneSensor:
     color_sensor: ColorSensorV3
+    
+
+    COLOR_VALUES = [(0,255,255),(0,255,0),(255,0,0),(0,0,255)];
+    COLOR_NAMES = ['blue','green','red','yellow']; #counterclockwise order
+
+    def __init__(self):
+        self.current_color = None;
+        self.last_color = None;
 
     def execute(self):
-        pass;
+        self.last_color = self.current_color;
+        self.current_color = self.nearest_color(self.get_rgb());
 
+    def nearest_color(self,rgb):
+        differences = [sum([abs(rgb[j]-color[j]) for j in range(3)]) for color in self.COLOR_VALUES];
+        return self.COLOR_NAMES[differences.index(min(differences))];
+        
     def get_rgb(self):
         return self.color_sensor.getColor();
 

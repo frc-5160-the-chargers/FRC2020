@@ -17,13 +17,15 @@ from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
 from components.sensors import Encoders, NavX, WheelOfFortuneSensor
+from components.colorWheel import ColorWheelController
 
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
 
-    wheel_of_fortune_sensor: WheelOfFortuneSensor
+    color_sensor : WheelOfFortuneSensor
+    fortune_controller : ColorWheelController
 
     drivetrain: Drivetrain
 
