@@ -78,3 +78,6 @@ class WheelOfFortuneSensor:
 
     def get_rgb(self):
         return self.color_sensor.getColor();
+
+    def get_ir(self):
+        return self.color_sensor.getIR();
