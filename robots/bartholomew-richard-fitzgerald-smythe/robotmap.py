@@ -5,8 +5,8 @@ from rev import IdleMode
 class RobotMap:
     class OI:
         driver_deadband = .05
-        drivetrain_rotation_deadband = .1
-
+        drivetrain_rotation_assist_deadband = .1
+        
     class Drivetrain:
         motors_left = [1, 2]
         motors_right = [3, 4]

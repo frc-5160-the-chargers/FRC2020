@@ -35,38 +35,22 @@ class Powertrain:
     def reset(self):
         self.reset_state()
 
-    # oh god, what atrocities have i committed.
-
-    def set_tank_powers(self, left_power, right_power):
+    # refactorsed and genericisized setters for power (good to use in PID controllers)
+    def set_tank_powers(self, left_power=None, right_power=None):
         self.power = self.rotation = 0
-        self.left_power = left_power
-        self.right_power = right_power
+        if left_power != None:
+            self.left_power = left_power
+        if right_power != None:
+            self.right_power = right_power
 
-    def set_arcade_powers(self, power, rotation):
+    def set_arcade_powers(self, power=None, rotation=None):
         self.left_power = self.right_power = 0 
-        self.power = power
-        self.rotation = rotation
+        if power != None:
+            self.power = power
+        if rotation != None:
+            self.rotation = rotation
 
-    def set_arcade_turning(self, rotation):
-        self.mode = PowertrainMode.ARCADE_DRIVE
-        self.left_power = self.right_power = 0
-        self.rotation = rotation
-    
-    def set_arcade_speed(self, power):
-        self.mode = PowertrainMode.ARCADE_DRIVE
-        self.left_power = self.right_power = 0
-        self.power = power
-
-    def set_power_left(self, power):
-        self.mode = PowertrainMode.TANK_DRIVE
-        self.power = self.rotation = 0
-        self.left_power = power
-
-    def set_power_right(self, power):
-        self.mode = PowertrainMode.TANK_DRIVE
-        self.power = self.rotation = 0
-        self.right_power = power
-
+    # basic drive setters
     def tank_drive(self, left_power, right_power):
         self.mode = PowertrainMode.TANK_DRIVE
         self.set_tank_powers(left_power, right_power)
@@ -88,11 +72,13 @@ class Powertrain:
             self.differential_drive.curvatureDrive(self.power, self.rotation, False)
 
 class DrivetrainState:
+    # 0-9 == manual modes
     MANUAL_DRIVE = 0
     
-    AIDED_DRIVE = 10
-    AIDED_DRIVE_STRAIGHT_TAKEOVER = 11
+    # 10-19 == aided modes
+    AIDED_DRIVE_STRAIGHT = 10
 
+    # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
     PID_VELOCITY = 22
@@ -106,7 +92,7 @@ class Drivetrain:
         self.turn_pid = SuperPIDController(
             pid_values=RobotMap.Drivetrain.turn_pid,
             f_in=lambda: self.get_heading(),
-            f_out=lambda x: self.powertrain.set_arcade_turning(x),
+            f_out=lambda x: self.powertrain.set_arcade_powers(rotation=x),
             f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_turn, target, error),
             pid_key=RobotMap.Drivetrain.turn_pid_key
         )
@@ -118,7 +104,7 @@ class Drivetrain:
         self.position_pid = SuperPIDController(
             pid_values=RobotMap.Drivetrain.position_pid,
             f_in=lambda: self.get_position(EncoderSide.BOTH),
-            f_out=lambda x: self.powertrain.set_arcade_speed(x),
+            f_out=lambda x: self.powertrain.set_arcade_powers(power=x),
             f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_straight, target, error),
             pid_key=RobotMap.Drivetrain.position_pid_key
         )
@@ -130,7 +116,7 @@ class Drivetrain:
         self.velocity_left_pid = SuperPIDController(
             pid_values=RobotMap.Drivetrain.velocity_left,
             f_in=lambda: self.get_velocity(EncoderSide.LEFT),
-            f_out=lambda x: self.powertrain.set_power_left(x),
+            f_out=lambda x: self.powertrain.set_tank_powers(left_power=x),
             f_feedforwards=lambda target, error: ff_flywheel(RobotMap.Drivetrain.kF_velocity, target, error),
             pid_key=RobotMap.Drivetrain.velocity_left_key
         )
@@ -142,7 +128,7 @@ class Drivetrain:
         self.velocity_right_pid = SuperPIDController(
             pid_values=RobotMap.Drivetrain.velocity_right,
             f_in=lambda: self.get_velocity(EncoderSide.RIGHT),
-            f_out=lambda x: self.powertrain.set_power_right(x),
+            f_out=lambda x: self.powertrain.set_tank_powers(right_power=x),
             f_feedforwards=lambda target, error: ff_flywheel(RobotMap.Drivetrain.kF_velocity, target, error),
             pid_key=RobotMap.Drivetrain.velocity_right_key
         )
@@ -179,6 +165,9 @@ class Drivetrain:
     def get_position(self, side: EncoderSide):
         return self.encoders.get_position(side)
 
+    def ready_straight_assist(self):
+        return self.navx.navx_ahrs.isConnected()
+
     def tank_drive(self, left_power, right_power):
         self.pid_manager.stop_controllers()
         self.state = DrivetrainState.MANUAL_DRIVE
@@ -188,6 +177,15 @@ class Drivetrain:
         self.pid_manager.stop_controllers()
         self.state = DrivetrainState.MANUAL_DRIVE
         self.powertrain.curvature_drive(power, rotation)
+
+    def drive_straight(self, power):
+        if self.state != DrivetrainState.AIDED_DRIVE_STRAIGHT:
+            self.pid_manager.stop_controllers()
+            self.navx.reset()
+            self.state = DrivetrainState.AIDED_DRIVE_STRAIGHT
+            self.powertrain.mode = PowertrainMode.ARCADE_DRIVE
+            self.turn_pid.run_setpoint(0)
+        self.powertrain.set_arcade_powers(power=power)
 
     def turn_to_angle(self, angle):
         if self.state != DrivetrainState.PID_TURNING:

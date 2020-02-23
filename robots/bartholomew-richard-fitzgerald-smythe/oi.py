@@ -11,16 +11,19 @@ class Driver:
     def __init__(self, controller: XboxController):
         self.controller = controller
     
-    def get_aided_rotation(self):
-        return abs(self.controller.getX()) <= RobotMap.OI.drivetrain_rotation_deadband
+    def ready_straight_assist(self):
+        x, _ = self.get_raw_output()
+        return abs(x) <= RobotMap.OI.drivetrain_rotation_assist_deadband
 
-    def get_curvature_output(self):
+    def get_raw_output(self):
         x = self.controller.getX()
         y = self.controller.getY(XboxController.Hand.kLeft)
+        return x, y
 
+    def get_curvature_output(self):
+        x, y = self.get_raw_output()
         x = -math.copysign(deadzone(x, RobotMap.OI.driver_deadband) ** 2, x)
         y = math.copysign(deadzone(y, RobotMap.OI.driver_deadband) ** 2, y)
-
         return x, y
 
     def get_update_pid_dash(self):

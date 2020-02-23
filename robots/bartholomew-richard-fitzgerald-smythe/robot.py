@@ -94,42 +94,23 @@ class Robot(magicbot.MagicRobot):
                 DrivetrainState.PID_VELOCITY: "Velocity"
             }[self.pid_mode])
 
-            if self.driver.get_update_pid_dash():
-                self.drivetrain.pid_manager.update_from_dash()
-
     def teleopPeriodic(self):
-        # handle the current pid controller if starting a pid controller
-        if self.driver.get_enable_pid():
-            if self.pid_mode == DrivetrainState.PID_TURNING:
-                self.drivetrain.turn_to_angle(self.dash_target_angle.get())
-            if self.pid_mode == DrivetrainState.PID_STRAIGHT:
-                self.drivetrain.drive_to_position(self.dash_target_position.get())
-            if self.pid_mode == DrivetrainState.PID_VELOCITY:
-                self.drivetrain.velocity_control(self.dash_target_vel_left.get(), self.dash_target_vel_right.get())
-
         # drive the drivetrain as needed
-        # TODO implement aided drive from THOR
-        if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
-            driver_x, driver_y = self.driver.get_curvature_output()
-            self.drivetrain.curvature_drive(driver_y, driver_x)
-        elif self.pid_mode == DrivetrainState.PID_TURNING:
-            self.drivetrain.turn_to_angle(self.dash_target_angle.get())
-        elif self.pid_mode == DrivetrainState.PID_STRAIGHT:
-            self.drivetrain.drive_to_position(self.dash_target_position.get())
-        elif self.pid_mode == DrivetrainState.PID_VELOCITY:
-            self.drivetrain.velocity_control(self.dash_target_vel_left.get(), self.dash_target_vel_right.get())
+        driver_x, driver_y = self.driver.get_curvature_output()
 
-        # use manual control if enabled
+        # manually handled driving
+        if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
+            self.drivetrain.curvature_drive(driver_y, driver_x)
+
+        # check and see if we need to activate driver assists
+        if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
+            self.drivetrain.drive_straight(driver_y)
+        elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
+            self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+
+        # revert to manual control if enabled
         if self.driver.get_manual_control_override():
             self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
-        
-        # rotate through PID control types
-        if self.driver.get_toggle_pid_type_pressed():
-            self.pid_mode = {
-                DrivetrainState.PID_STRAIGHT: DrivetrainState.PID_TURNING,
-                DrivetrainState.PID_TURNING: DrivetrainState.PID_VELOCITY,
-                DrivetrainState.PID_VELOCITY: DrivetrainState.PID_STRAIGHT
-            }[self.pid_mode]
 
 if __name__ == '__main__':
     wpilib.run(Robot)
