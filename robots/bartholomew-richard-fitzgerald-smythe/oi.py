@@ -38,6 +38,12 @@ class Driver:
     def get_update_telemetry(self):
         return self.controller.getYButtonPressed()
 
+    def get_toggle_fortune_auto(self):
+        return self.controller.getBumperPressed(XboxController.Hand.kRightHand);
+
+    def get_manual_fortune_input(self):
+        return self.controller.getTriggerAxis(XboxController.Hand.kRightHand)-self.controller.getTriggerAxis(XboxController.Hand.kLeftHand);
+
 class Sysop:
     def __init__(self, controller: XboxController):
         self.controller = controller

@@ -3,6 +3,8 @@ import wpilib.drive
 
 from wpilib import SmartDashboard as dash
 
+from ctre import WPI_TalonSRX
+
 import magicbot
 
 from rev import CANSparkMax, MotorType
@@ -23,6 +25,8 @@ class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
+
+    fortune_motor : WPI_TalonSRX
 
     color_sensor : WheelOfFortuneSensor
     fortune_controller : ColorWheelController
@@ -125,6 +129,12 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain.drive_to_position(self.dash_target_position.get())
         elif self.pid_mode == DrivetrainState.PID_VELOCITY:
             self.drivetrain.velocity_control(self.dash_target_vel_left.get(), self.dash_target_vel_right.get())
+
+        if (self.driver.get_toggle_fortune_auto()):
+            self.fortune_controller.toggle_auto();
+        
+        if (self.driver.get_manual_fortune_input() > 0):
+            self.fortune_controller.manual_power_input(self.driver.get_manual_fortune_input());
 
         # use manual control if enabled
         if self.driver.get_manual_control_override():
