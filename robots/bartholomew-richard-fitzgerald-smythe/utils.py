@@ -27,6 +27,9 @@ class TalonMotorConfig:
         self.ramp_rate = ramp_rate
 
 def config_talon(talon: WPI_TalonSRX, motor_config: TalonMotorConfig):
+    # when deploying it might be a somewhat good idea to actually uncomment this next line
+    # talon.configFactoryDefault()
+
     talon.enableVoltageCompensation(True)
     talon.configVoltageCompSaturation(motor_config.voltage_saturation)
 
@@ -45,6 +48,17 @@ def clamp(i, mi, ma):
 
 def average(l):
     return sum(l)/len(l)
+
+def map_value(i, initial_min, initial_max, new_min, new_max):
+    # perform a linear mapping of a value across spaces
+    i = clamp(i, initial_min, initial_max)
+    i += initial_min
+    distance = initial_max - initial_min
+    percent = i/distance
+    new_distance = new_max - new_min
+    out = percent * new_distance
+    out -= new_min
+    return out
 
 class PIDValue:
     def __init__(self, p, i, d):

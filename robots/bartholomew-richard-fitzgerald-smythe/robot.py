@@ -6,15 +6,17 @@ from wpilib import SmartDashboard as dash
 import magicbot
 
 from rev import CANSparkMax, MotorType
+from ctre import WPI_TalonSRX
 
 import navx
 
 from oi import Driver, Sysop
-from utils import config_spark
+from utils import config_spark, config_talon
 from robotmap import RobotMap
 from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
+from components.intake import IntakeLift, IntakeRoller, Intake
 from components.sensors import Encoders, NavX
 
 class Robot(magicbot.MagicRobot):
@@ -24,8 +26,14 @@ class Robot(magicbot.MagicRobot):
 
     drivetrain: Drivetrain
 
+    intake_lift: IntakeLift
+    intake_roller: IntakeRoller
+
+    intake: Intake
+
     def createObjects(self):
         # initialize physical objects
+        # drivetrain
         motor_objects_left = [
             CANSparkMax(port, MotorType.kBrushless) for port in RobotMap.Drivetrain.motors_left
         ]
@@ -47,6 +55,18 @@ class Robot(magicbot.MagicRobot):
 
         self.navx_ahrs = navx.AHRS.create_spi()
 
+        # intake
+        self.intake_lift_motor = WPI_TalonSRX(RobotMap.IntakeLift.motor_port)
+        self.intake_lift_motor.configPeakOutputForward(RobotMap.IntakeLift.max_power)
+        self.intake_lift_motor.configPeakOutputReverse(-RobotMap.IntakeLift.max_power)
+        config_talon(self.intake_lift_motor, RobotMap.IntakeLift.motor_config)
+
+        self.intake_roller_motor = WPI_TalonSRX(RobotMap.IntakeRoller.motor_port)
+        self.intake_roller_motor.configPeakOutputForward(RobotMap.IntakeRoller.max_power)
+        self.intake_roller_motor.configPeakOutputReverse(-RobotMap.IntakeRoller.max_power)
+        config_talon(self.intake_roller_motor, RobotMap.IntakeRoller.motor_config)
+
+        # controllers and electrical stuff
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
         
@@ -69,6 +89,7 @@ class Robot(magicbot.MagicRobot):
 
     def reset_subsystems(self):
         self.drivetrain.reset()
+        self.intake.reset()
 
     def teleopInit(self):
         self.reset_subsystems()
@@ -111,6 +132,24 @@ class Robot(magicbot.MagicRobot):
         # revert to manual control if enabled
         if self.driver.get_manual_control_override():
             self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+
+        # handle intake control
+        # lift
+        intake_power = self.sysop.get_intake_lift_axis()
+        if intake_power > 0:
+            self.intake_lift.raise_lift(intake_power)
+        elif intake_power < 0:
+            self.intake_lift.lower_lift(intake_power)
+        else:
+            self.intake_lift.stop()
+
+        # intake rollers
+        if self.sysop.get_intake_intake():
+            self.intake_roller.intake()
+        elif self.sysop.get_intake_outtake():
+            self.intake_roller.outtake()
+        else:
+            self.intake_roller.stop()
 
 if __name__ == '__main__':
     wpilib.run(Robot)

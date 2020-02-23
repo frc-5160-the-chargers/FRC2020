@@ -1,11 +1,14 @@
-from utils import SparkMotorConfig, PIDValue
+from utils import SparkMotorConfig, PIDValue, TalonMotorConfig
 
+from ctre import NeutralMode
 from rev import IdleMode
 
 class RobotMap:
     class OI:
         driver_deadband = .05
         drivetrain_rotation_assist_deadband = .1
+
+        lift_deadband = .05
 
     class Drivetrain:
         motors_left = [1, 2]
@@ -41,6 +44,37 @@ class RobotMap:
 
         velocity_right = PIDValue(0, 0, 0)
         velocity_right_key = "Right Velocity PID"
+    
+    class IntakeLift:
+        motor_port = 5
+        max_power = .4
+
+        max_power_up = .4
+        max_power_down = .1
+
+        motor_config = TalonMotorConfig(
+            voltage_saturation=11,
+            deadband=0.05,
+            peak_current=60,
+            continuous_current=39,
+            default_mode=NeutralMode.Brake,
+            ramp_rate=.2
+        )
+
+    class IntakeRoller:
+        motor_port = 6
+        max_power = .4
+
+        roller_power = .2
+
+        motor_config = TalonMotorConfig(
+            voltage_saturation=11,
+            deadband=0.05,
+            peak_current=60,
+            continuous_current=39,
+            default_mode=NeutralMode.Brake,
+            ramp_rate=.2
+        )
 
     class Encoders:
         distance_per_pulse = 1 # TODO get correct value
