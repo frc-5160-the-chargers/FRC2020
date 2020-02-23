@@ -6,20 +6,24 @@ class RobotMap:
     class OI:
         driver_deadband = .05
         drivetrain_rotation_assist_deadband = .1
-        
+
     class Drivetrain:
         motors_left = [1, 2]
         motors_right = [3, 4]
 
         # TODO tune this
+        # https://www.chiefdelphi.com/t/any-tips-on-neo-motors/355988/8
+        # this looks like a good place to start for that
+        # @40A the motor will be able to stall for an entire match and not burn out
+        # https://www.revrobotics.com/neo-brushless-motor-locked-rotor-testing/
         motor_config = SparkMotorConfig(
             voltage_compensation=11,
-            stall_current_limit=15,
-            default_mode=IdleMode.kBrake,
+            stall_current_limit=39,
+            default_mode=IdleMode.kCoast,
             ramp_rate=.5
         )
 
-        max_motor_power = .3
+        max_motor_power = .4
 
         # TODO all of these PID values are taken from kirkland
         kF_turn = .3

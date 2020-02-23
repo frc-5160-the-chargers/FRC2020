@@ -11,12 +11,10 @@ class SparkMotorConfig:
         self.ramp_rate = ramp_rate
 
 def config_spark(spark: CANSparkMax, motor_config: SparkMotorConfig):
+    spark.restoreFactoryDefaults()
     spark.enableVoltageCompensation(motor_config.voltage_compensation)
-
     spark.setSmartCurrentLimit(motor_config.stall_limit)
-
     spark.setIdleMode(motor_config.default_mode)
-
     spark.setOpenLoopRampRate(motor_config.ramp_rate)
 
 class TalonMotorConfig:
