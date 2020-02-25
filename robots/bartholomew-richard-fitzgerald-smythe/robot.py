@@ -26,10 +26,10 @@ class Robot(magicbot.MagicRobot):
 
     drivetrain: Drivetrain
 
-    intake_lift: IntakeLift
-    intake_roller: IntakeRoller
+    # intake_lift: IntakeLift
+    # intake_roller: IntakeRoller
 
-    intake: Intake
+    # intake: Intake
 
     def createObjects(self):
         # initialize physical objects
@@ -89,7 +89,7 @@ class Robot(magicbot.MagicRobot):
 
     def reset_subsystems(self):
         self.drivetrain.reset()
-        self.intake.reset()
+        # self.intake.reset()
 
     def teleopInit(self):
         self.reset_subsystems()
@@ -124,10 +124,10 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain.curvature_drive(driver_y, driver_x)
 
         # check and see if we need to activate driver assists
-        if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
-            self.drivetrain.drive_straight(driver_y)
-        elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
-            self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+        # if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
+        #     self.drivetrain.drive_straight(driver_y)
+        # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
+        #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
 
         # revert to manual control if enabled
         if self.driver.get_manual_control_override():
@@ -135,21 +135,21 @@ class Robot(magicbot.MagicRobot):
 
         # handle intake control
         # lift
-        intake_power = self.sysop.get_intake_lift_axis()
-        if intake_power > 0:
-            self.intake_lift.raise_lift(intake_power)
-        elif intake_power < 0:
-            self.intake_lift.lower_lift(intake_power)
-        else:
-            self.intake_lift.stop()
+        # intake_power = self.sysop.get_intake_lift_axis()
+        # if intake_power > 0:
+        #     self.intake_lift.raise_lift(intake_power)
+        # elif intake_power < 0:
+        #     self.intake_lift.lower_lift(intake_power)
+        # else:
+        #     self.intake_lift.stop()
 
         # intake rollers
-        if self.sysop.get_intake_intake():
-            self.intake_roller.intake()
-        elif self.sysop.get_intake_outtake():
-            self.intake_roller.outtake()
-        else:
-            self.intake_roller.stop()
+        # if self.sysop.get_intake_intake():
+        #     self.intake_roller.intake()
+        # elif self.sysop.get_intake_outtake():
+        #     self.intake_roller.outtake()
+        # else:
+        #     self.intake_roller.stop()
 
 if __name__ == '__main__':
     wpilib.run(Robot)

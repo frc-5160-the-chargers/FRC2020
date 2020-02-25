@@ -22,11 +22,12 @@ class RobotMap:
         motor_config = SparkMotorConfig(
             voltage_compensation=11,
             stall_current_limit=39,
-            default_mode=IdleMode.kCoast,
-            ramp_rate=.5
+            default_mode=IdleMode.kBrake,
+            ramp_rate=2,
+            reverse_motor=True
         )
 
-        max_motor_power = .4
+        max_motor_power = .2
 
         # TODO all of these PID values are taken from kirkland
         kF_turn = .3
@@ -61,6 +62,11 @@ class RobotMap:
             ramp_rate=.2
         )
 
+        encoder_distance_per_pulse = 360/4096
+
+        pid_values = PIDValue(0, 0, 0)
+        pid_key = "Intake Lift PID"
+
     class IntakeRoller:
         motor_port = 6
         max_power = .4
@@ -75,6 +81,12 @@ class RobotMap:
             default_mode=NeutralMode.Brake,
             ramp_rate=.2
         )
+
+    class Climber:
+        motor_port = 7
+    
+    class ColorWheel:
+        motor_port = 8
 
     class Encoders:
         distance_per_pulse = 1 # TODO get correct value

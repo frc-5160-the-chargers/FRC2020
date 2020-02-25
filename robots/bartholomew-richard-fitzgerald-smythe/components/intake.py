@@ -1,8 +1,10 @@
+from wpilib import Encoder
 from ctre import WPI_TalonSRX
 
 from robotmap import RobotMap
 
 from utils import clamp
+from pid import SuperPIDController
 
 class IntakeLiftState:
     STOPPED = 0
@@ -10,12 +12,18 @@ class IntakeLiftState:
     LOWERING = 2
 
 class IntakeLift:
-    # TODO this would be really nice as a closed loop control system...
-
     intake_lift_motor: WPI_TalonSRX
+    intake_lift_encoder: Encoder
 
     def __init__(self):
         self.reset_state()
+        self.pid_controller = SuperPIDController(
+            pid_values=RobotMap.IntakeLift.pid_values,
+            f_in=self.get_position,
+            f_out=lambda x: self.set_power_raw(x),
+            f_feedforwards=lambda a, b: 0,
+            pid_key=RobotMap.IntakeLift.pid_key
+        )
 
     def reset_state(self):
         self.state = IntakeLiftState.STOPPED
@@ -23,6 +31,13 @@ class IntakeLift:
 
     def reset(self):
         self.reset_state()
+        self.intake_lift_encoder.setDistancePerPulse(RobotMap.IntakeLift.encoder_distance_per_pulse)
+
+    def get_position(self):
+        return self.intake_lift_encoder.getDistance()
+
+    def get_feedforwards(self):
+        pass
 
     def raise_lift(self, power):
         self.state = IntakeLiftState.RAISING
@@ -35,6 +50,14 @@ class IntakeLift:
     def stop(self):
         self.state = IntakeLiftState.STOPPED
         self.power = 0
+
+    def set_power_raw(self, power):
+        if self.power > 0:
+            self.raise_lift(power)
+        elif self.power < 0:
+            self.lower_lift(power)
+        else:
+            self.stop()
 
     def execute(self):
         if self.state == IntakeLiftState.LOWERING:

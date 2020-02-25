@@ -24,8 +24,8 @@ class Driver:
 
     def get_curvature_output(self):
         x, y = self.get_raw_output()
-        x = -math.copysign(deadzone(x, RobotMap.OI.driver_deadband) ** 2, x)
-        y = math.copysign(deadzone(y, RobotMap.OI.driver_deadband) ** 2, y)
+        x = -math.copysign(abs(deadzone(x, RobotMap.OI.driver_deadband)) ** .5, x)
+        y = math.copysign(abs(deadzone(y, RobotMap.OI.driver_deadband)) ** 2, y)
         return x, y
 
     def get_update_pid_dash(self):

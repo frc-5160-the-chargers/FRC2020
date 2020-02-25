@@ -69,7 +69,7 @@ class Powertrain:
         elif self.mode == PowertrainMode.ARCADE_DRIVE:
             self.differential_drive.arcadeDrive(self.power, self.rotation, False)
         elif self.mode == PowertrainMode.CURVATURE_DRIVE:
-            self.differential_drive.curvatureDrive(self.power, self.rotation, False)
+            self.differential_drive.curvatureDrive(self.power, self.rotation, True)
 
 class DrivetrainState:
     # 0-9 == manual modes

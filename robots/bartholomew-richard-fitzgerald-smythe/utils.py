@@ -4,11 +4,12 @@ from ctre import WPI_TalonSRX
 from wpilib import PIDController
 
 class SparkMotorConfig:
-    def __init__(self, voltage_compensation, stall_current_limit, default_mode, ramp_rate):
+    def __init__(self, voltage_compensation, stall_current_limit, default_mode, ramp_rate, reverse_motor=False):
         self.voltage_compensation = voltage_compensation
         self.stall_limit = stall_current_limit
         self.default_mode = default_mode
         self.ramp_rate = ramp_rate
+        self.reversed = reverse_motor
 
 def config_spark(spark: CANSparkMax, motor_config: SparkMotorConfig):
     spark.restoreFactoryDefaults()
@@ -16,15 +17,18 @@ def config_spark(spark: CANSparkMax, motor_config: SparkMotorConfig):
     spark.setSmartCurrentLimit(motor_config.stall_limit)
     spark.setIdleMode(motor_config.default_mode)
     spark.setOpenLoopRampRate(motor_config.ramp_rate)
+    spark.setClosedLoopRampRate(motor_config.ramp_rate)
+    spark.setInverted(motor_config.reversed)
 
 class TalonMotorConfig:
-    def __init__(self, voltage_saturation, deadband, peak_current, continuous_current, default_mode, ramp_rate):
+    def __init__(self, voltage_saturation, deadband, peak_current, continuous_current, default_mode, ramp_rate, reverse_motor=False):
         self.voltage_saturation = voltage_saturation
         self.deadband = deadband
         self.peak_current = peak_current
         self.continuous_current = continuous_current
         self.default_mode = default_mode
         self.ramp_rate = ramp_rate
+        self.reversed = reverse_motor
 
 def config_talon(talon: WPI_TalonSRX, motor_config: TalonMotorConfig):
     # when deploying it might be a somewhat good idea to actually uncomment this next line
@@ -42,6 +46,8 @@ def config_talon(talon: WPI_TalonSRX, motor_config: TalonMotorConfig):
     talon.configNeutralDeadband(motor_config.deadband)
 
     talon.configOpenLoopRamp(motor_config.ramp_rate)
+
+    talon.setInverted(motor_config.reversed)
 
 def clamp(i, mi, ma):
     return min(ma, max(mi, i))
