@@ -3,9 +3,11 @@ from utils import SparkMotorConfig, PIDValue, TalonMotorConfig
 from ctre import NeutralMode
 from rev import IdleMode
 
+import math
+
 class RobotMap:
     class OI:
-        driver_deadband = .05
+        driver_deadband = .1
         drivetrain_rotation_assist_deadband = .1
 
         lift_deadband = .05
@@ -62,10 +64,18 @@ class RobotMap:
             ramp_rate=.2
         )
 
-        encoder_distance_per_pulse = 360/4096
+        encoder_distance_per_pulse = 360/4096 * (24/60)
+        encoder_averaging = 5
+
+        # kP: .0025
+        # kI: 
+        # kD: 
 
         pid_values = PIDValue(0, 0, 0)
         pid_key = "Intake Lift PID"
+
+        encoder_port_a = 4
+        encoder_port_b = 5
 
     class IntakeRoller:
         motor_port = 6
@@ -83,13 +93,13 @@ class RobotMap:
         )
 
     class Climber:
-        motor_port = 7
+        motor_port = 8
     
     class ColorWheel:
-        motor_port = 8
+        motor_port = 7
 
     class Encoders:
-        distance_per_pulse = 1 # TODO get correct value
+        distance_per_pulse = (8*math.pi)/360
         
         left_encoder_a = 0
         left_encoder_b = 1

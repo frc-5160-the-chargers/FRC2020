@@ -26,10 +26,10 @@ class Robot(magicbot.MagicRobot):
 
     drivetrain: Drivetrain
 
-    # intake_lift: IntakeLift
-    # intake_roller: IntakeRoller
+    intake_lift: IntakeLift
+    intake_roller: IntakeRoller
 
-    # intake: Intake
+    intake: Intake
 
     def createObjects(self):
         # initialize physical objects
@@ -52,6 +52,8 @@ class Robot(magicbot.MagicRobot):
 
         self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_a, RobotMap.Encoders.left_encoder_b)
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_a, RobotMap.Encoders.right_encoder_b)
+        self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
+        self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
 
         self.navx_ahrs = navx.AHRS.create_spi()
 
@@ -66,6 +68,11 @@ class Robot(magicbot.MagicRobot):
         self.intake_roller_motor.configPeakOutputReverse(-RobotMap.IntakeRoller.max_power)
         config_talon(self.intake_roller_motor, RobotMap.IntakeRoller.motor_config)
 
+        # self.intake_lift_encoder = wpilib.Encoder(RobotMap.IntakeLift.encoder_port_b, RobotMap.IntakeLift.encoder_port_a)
+        # self.intake_lift_encoder.reset()
+        # self.intake_lift_encoder.setSamplesToAverage(RobotMap.IntakeLift.encoder_averaging)
+        # self.intake_lift_encoder.setDistancePerPulse(RobotMap.IntakeLift.encoder_distance_per_pulse)
+
         # controllers and electrical stuff
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
@@ -79,41 +86,22 @@ class Robot(magicbot.MagicRobot):
         self.dash_target_position = Tunable("Target Position")
         self.dash_target_vel_left = Tunable("Target Velocity Left")
         self.dash_target_vel_right = Tunable("Target Velocity Right")
+        self.dash_target_lift_position = Tunable("Target Position Lift")
 
         self.tunables = [
             self.dash_target_angle,
             self.dash_target_position,
             self.dash_target_vel_left,
-            self.dash_target_vel_right
+            self.dash_target_vel_right,
+            self.dash_target_lift_position
         ]
 
     def reset_subsystems(self):
         self.drivetrain.reset()
-        # self.intake.reset()
+        self.intake.reset()
 
     def teleopInit(self):
-        self.reset_subsystems()
-
-    def robotPeriodic(self):
-        if self.isEnabled():
-            # push all tunables
-            if self.driver.get_update_telemetry():
-                for t in self.tunables:
-                    t.push()
-                self.drivetrain.pid_manager.push_to_dash()
-            
-            # update tunables
-            dash.putNumber("NavX Heading", self.navx.get_heading())
-            dash.putNumber("Drivetrain Position", self.drivetrain.encoders.get_position(EncoderSide.BOTH))
-            dash.putNumber("Left Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.LEFT))
-            dash.putNumber("Right Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.RIGHT))
-            dash.putNumber("Voltage", self.rio_controller.getBatteryVoltage())
-
-            dash.putString("PID Mode", {
-                DrivetrainState.PID_STRAIGHT: "Straight",
-                DrivetrainState.PID_TURNING: "Turning",
-                DrivetrainState.PID_VELOCITY: "Velocity"
-            }[self.pid_mode])
+        pass
 
     def teleopPeriodic(self):
         # drive the drivetrain as needed

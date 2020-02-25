@@ -4,60 +4,77 @@ from ctre import WPI_TalonSRX
 from robotmap import RobotMap
 
 from utils import clamp
-from pid import SuperPIDController
+from pid import SuperPIDController, PidManager
 
 class IntakeLiftState:
     STOPPED = 0
     RAISING = 1
     LOWERING = 2
 
+    PID_CONTROLLED = 10
+
 class IntakeLift:
     intake_lift_motor: WPI_TalonSRX
-    intake_lift_encoder: Encoder
+    # intake_lift_encoder: Encoder
 
     def __init__(self):
-        self.reset_state()
         self.pid_controller = SuperPIDController(
             pid_values=RobotMap.IntakeLift.pid_values,
             f_in=self.get_position,
             f_out=lambda x: self.set_power_raw(x),
-            f_feedforwards=lambda a, b: 0,
+            f_feedforwards=lambda a, b: self.get_feedforwards(a, b),
             pid_key=RobotMap.IntakeLift.pid_key
         )
+        self.pid_manager = PidManager([
+            self.pid_controller
+        ])
+        self.reset_state()
 
     def reset_state(self):
         self.state = IntakeLiftState.STOPPED
         self.power = 0
+        self.target_position = 0
+        self.pid_manager.reset_controllers()
+
+    def reset_encoder(self):
+        self.intake_lift_motor.setQuadraturePosition(0)
 
     def reset(self):
         self.reset_state()
-        self.intake_lift_encoder.setDistancePerPulse(RobotMap.IntakeLift.encoder_distance_per_pulse)
+        self.reset_encoder()
+        # self.intake_lift_encoder.reset()
 
     def get_position(self):
-        return self.intake_lift_encoder.getDistance()
+        # return self.intake_lift_encoder.getDistance()
+        return self.intake_lift_motor.getQuadraturePosition() * RobotMap.IntakeLift.encoder_distance_per_pulse
 
-    def get_feedforwards(self):
-        pass
+    def get_feedforwards(self, target, error):
+        return 0
 
     def raise_lift(self, power):
+        self.pid_manager.stop_controllers()
         self.state = IntakeLiftState.RAISING
         self.power = abs(power)
 
     def lower_lift(self, power):
+        self.pid_manager.stop_controllers()
         self.state = IntakeLiftState.LOWERING
         self.power = abs(power)
 
     def stop(self):
+        self.pid_manager.stop_controllers()
         self.state = IntakeLiftState.STOPPED
+        self.power = 0
+    
+    def set_position_pid(self, position):
+        if self.state != IntakeLiftState.PID_CONTROLLED:
+            self.pid_manager.reset_controllers()
+        self.state = IntakeLiftState.PID_CONTROLLED
+        self.pid_controller.start()
         self.power = 0
 
     def set_power_raw(self, power):
-        if self.power > 0:
-            self.raise_lift(power)
-        elif self.power < 0:
-            self.lower_lift(power)
-        else:
-            self.stop()
+        self.power = power
 
     def execute(self):
         if self.state == IntakeLiftState.LOWERING:
@@ -70,6 +87,15 @@ class IntakeLift:
             )
         elif self.state == IntakeLiftState.STOPPED:
             self.intake_lift_motor.stopMotor()
+        elif self.state == IntakeLiftState.PID_CONTROLLED:
+            self.pid_controller.run_setpoint(self.target_position)
+            if self.power < 0:
+                p = -min(self.power, RobotMap.IntakeLift.max_power_down)
+            elif self.power > 0:
+                p = min(self.power, RobotMap.IntakeLift.max_power_up)
+            else:
+                p = 0
+            self.intake_lift_motor.set(p)
 
 class IntakeRollerState:
     STOPPED = 0

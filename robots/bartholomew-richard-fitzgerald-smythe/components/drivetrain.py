@@ -144,6 +144,8 @@ class Drivetrain:
             self.velocity_right_pid
         ])
 
+        self.reset_state()
+
     def reset_state(self):
         self.state = DrivetrainState.MANUAL_DRIVE
 
