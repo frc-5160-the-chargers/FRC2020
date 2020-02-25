@@ -84,6 +84,7 @@ class WheelOfFortuneSensor:
     def execute(self):
         self.last_color = self.current_color;
         self.current_color = self.nearest_color(self.get_rgb());
+        
 
     def nearest_color(self,rgb):
         differences = [sum([abs(rgb[j]-color[j]) for j in range(3)]) for color in self.COLOR_VALUES];

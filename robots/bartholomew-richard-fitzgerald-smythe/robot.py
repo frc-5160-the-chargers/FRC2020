@@ -78,6 +78,8 @@ class Robot(magicbot.MagicRobot):
             self.dash_target_vel_right
         ]
 
+        self.color_map = {'B':'blue','R':'red','G':'green','Y':'yellow'};
+
     def reset_subsystems(self):
         self.drivetrain.reset()
 
@@ -92,12 +94,19 @@ class Robot(magicbot.MagicRobot):
                     t.push()
                 self.drivetrain.pid_manager.push_to_dash()
             
+            self.fortune_controller.engage();
+
             # update tunables
             dash.putNumber("NavX Heading", self.navx.get_heading())
             dash.putNumber("Drivetrain Position", self.drivetrain.encoders.get_position(EncoderSide.BOTH))
             dash.putNumber("Left Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.LEFT))
             dash.putNumber("Right Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.RIGHT))
             dash.putNumber("Voltage", self.rio_controller.getBatteryVoltage())
+
+            dash.putNumberArray("Color Wheel RGB",self.color_sensor.getColor());
+            dash.putNumberArray("Color Wheel Color Name",self.color_sensor.currentColor);
+            dash.putNumberArray("Color Wheel Active",self.fortune_controller.get_auto_activated());
+                        
 
             dash.putString("PID Mode", {
                 DrivetrainState.PID_STRAIGHT: "Straight",
@@ -130,8 +139,17 @@ class Robot(magicbot.MagicRobot):
         elif self.pid_mode == DrivetrainState.PID_VELOCITY:
             self.drivetrain.velocity_control(self.dash_target_vel_left.get(), self.dash_target_vel_right.get())
 
+
+
         if (self.driver.get_toggle_fortune_auto()):
-            self.fortune_controller.toggle_auto();
+            data = self.ds.getGameSpecificMessage();
+            if (self.fortune_controller.get_auto_activated()):
+                if (data and data in self.color_map.keys()):
+                    self.fortune_controller.rotate_to_color(self.color_map[data]);
+                else:
+                    self.fortune_controller.rotate_by_steps(28);
+            else:
+                self.fortune_controller.deactivate();
         
         if (self.driver.get_manual_fortune_input() > 0):
             self.fortune_controller.manual_power_input(self.driver.get_manual_fortune_input());

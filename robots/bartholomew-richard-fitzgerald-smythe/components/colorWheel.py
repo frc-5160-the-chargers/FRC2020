@@ -72,3 +72,8 @@ class ColorWheelController(StateMachine):
     def get_color_name(self):
         return self.current_color;
 
+    def deactivate(self):
+        self.next_state('stop');
+
+           
+
