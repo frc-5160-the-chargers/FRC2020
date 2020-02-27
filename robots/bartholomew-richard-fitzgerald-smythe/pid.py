@@ -32,9 +32,13 @@ class SuperPIDController:
         self.f_in = f_in
         self.ff = ff
 
+        self.f_out = f_out
+
         self.output_range = (-1, 1)
 
         self.pid_values.update_controller(self.pid_controller)
+
+        self.active = False
 
     def get_target(self):
         if self.pid_controller.isEnabled():
@@ -59,7 +63,7 @@ class SuperPIDController:
             put_pid(self.pid_key, self.pid_values)
 
     def get_on_target(self):
-        return self.pid_controller.atSetpoint()
+        return self.pid_controller.atSetpoint() if self.active else True
 
     def calculate_output(self):
         pid_output = self.pid_controller.calculate(self.f_in())
@@ -67,18 +71,26 @@ class SuperPIDController:
         output = clamp(output, self.output_range[0], self.output_range[1])
         return output
 
+    def execute(self):
+        if self.active:
+            print(f"Controller active: {self.pid_key}")
+            self.f_out(self.calculate_output())
+
     def stop(self):
         self.reset()
+        self.active = False
 
     def start(self):
         self.reset()
+        self.active = True
 
     def reset(self):
         self.pid_controller.reset()
 
     def run_setpoint(self, value):
+        if not self.active:
+            self.start()
         self.pid_controller.setSetpoint(value)
-        self.start()
 
 class PidManager:
     def __init__(self, controllers):
@@ -105,3 +117,7 @@ class PidManager:
     def push_to_dash(self):
         for controller in self.controllers:
             controller.push_to_dash()
+
+    def execute_controllers(self):
+        for controller in self.controllers:
+            controller.execute()

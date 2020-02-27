@@ -220,4 +220,4 @@ class Drivetrain:
             self.powertrain.tank_drive(0, 0)
 
     def execute(self):
-        pass
+        self.pid_manager.execute_controllers()

@@ -18,22 +18,23 @@ class IntakeLift:
     # intake_lift_encoder: Encoder
 
     def __init__(self):
-        self.pid_controller = SuperPIDController(
-            pid_values=RobotMap.IntakeLift.pid_values,
-            f_in=self.get_position,
-            f_out=lambda x: self.set_power_raw(x),
-            f_feedforwards=lambda a, b: self.get_feedforwards(a, b),
-            pid_key=RobotMap.IntakeLift.pid_key
-        )
+        # self.pid_controller = SuperPIDController(
+        #     pid_values=RobotMap.IntakeLift.pid_values,
+        #     f_in=self.get_position,
+        #     f_out=lambda x: self.set_power_raw(x),
+        #     f_feedforwards=lambda a, b: self.get_feedforwards(a, b),
+        #     pid_key=RobotMap.IntakeLift.pid_key
+        # )
         self.reset_state()
 
     def reset_state(self):
         self.state = IntakeLiftState.STOPPED
         self.power = 0
-        self.target_position = 0
+        # self.target_position = 0
 
     def reset_encoder(self):
-        self.intake_lift_motor.setQuadraturePosition(0)
+        # self.intake_lift_motor.setQuadraturePosition(0)
+        pass
 
     def reset(self):
         self.reset_state()
@@ -48,25 +49,26 @@ class IntakeLift:
         return 0
 
     def raise_lift(self, power):
-        self.pid_controller.stop()
+        # self.pid_controller.stop()
         self.state = IntakeLiftState.RAISING
         self.power = abs(power)
 
     def lower_lift(self, power):
-        self.pid_controller.stop()
+        # self.pid_controller.stop()
         self.state = IntakeLiftState.LOWERING
         self.power = abs(power)
 
     def stop(self):
-        self.pid_controller.stop()
+        # self.pid_controller.stop()
         self.state = IntakeLiftState.STOPPED
         self.power = 0
     
     def set_position_pid(self, position):
-        if self.state != IntakeLiftState.PID_CONTROLLED:
-            self.pid_controller.reset()
-        self.pid_controller.run_setpoint(position)
-        self.state = IntakeLiftState.PID_CONTROLLED
+        # if self.state != IntakeLiftState.PID_CONTROLLED:
+        #     self.pid_controller.reset()
+        # self.pid_controller.run_setpoint(position)
+        # self.state = IntakeLiftState.PID_CONTROLLED
+        self.state = IntakeLiftState.STOPPED
 
     def set_power_raw(self, power):
         self.power = power
@@ -82,6 +84,8 @@ class IntakeLift:
             )
         elif self.state == IntakeLiftState.STOPPED:
             self.intake_lift_motor.stopMotor()
+        
+        # self.pid_controller.execute()
 
         # if self.state == IntakeLiftState.PID_CONTROLLED:
         #     print(self.power)

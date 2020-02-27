@@ -107,40 +107,96 @@ class Robot(magicbot.MagicRobot):
         pass
 
     def teleopPeriodic(self):
-        # drive the drivetrain as needed
-        driver_x, driver_y = self.driver.get_curvature_output()
+        # # drive the drivetrain as needed
+        # driver_x, driver_y = self.driver.get_curvature_output()
 
-        # manually handled driving
-        if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
-            self.drivetrain.curvature_drive(driver_y, driver_x)
+        # # manually handled driving
+        # if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
+        #     self.drivetrain.curvature_drive(driver_y, driver_x)
 
-        # check and see if we need to activate driver assists
-        # if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
-        #     self.drivetrain.drive_straight(driver_y)
-        # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
+        # # check and see if we need to activate driver assists
+        # # if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
+        # #     self.drivetrain.drive_straight(driver_y)
+        # # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
+        # #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+
+        # # revert to manual control if enabled
+        # if self.driver.get_manual_control_override():
         #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+
+        # # handle intake control
+        # # lift
+        # intake_power = self.sysop.get_intake_lift_axis()
+        # if intake_power > 0:
+        #     self.intake_lift.raise_lift(intake_power)
+        # elif intake_power < 0:
+        #     self.intake_lift.lower_lift(intake_power)
+        # else:
+        #     self.intake_lift.stop()
+
+        # # # intake rollers
+        # if self.sysop.get_intake_intake():
+        #     self.intake_roller.intake()
+        # elif self.sysop.get_intake_outtake():
+        #     self.intake_roller.outtake()
+        # else:
+        #     self.intake_roller.stop()
+
+
+
+        # PID TUNING CODE (remove when done)
+        # push tunables
+        if self.driver.get_update_telemetry():
+            for t in self.tunables:
+                t.push()
+            self.drivetrain.pid_manager.push_to_dash()
+        
+        # update tunables
+        dash.putNumber("NavX Heading", self.navx.get_heading())
+        dash.putNumber("Drivetrain Position", self.drivetrain.encoders.get_position(EncoderSide.BOTH))
+        dash.putNumber("Left Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.LEFT))
+        dash.putNumber("Right Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.RIGHT))
+
+        dash.putString("PID Mode", {
+            DrivetrainState.PID_STRAIGHT: "Straight",
+            DrivetrainState.PID_TURNING: "Turning",
+            DrivetrainState.PID_VELOCITY: "Velocity",
+        }[self.pid_mode])
+
+        # handle the current pid controller if starting a pid controller
+        if self.driver.get_enable_pid():
+            if self.pid_mode == DrivetrainState.PID_TURNING:
+                self.drivetrain.turn_to_angle(self.dash_target_angle.get())
+            if self.pid_mode == DrivetrainState.PID_STRAIGHT:
+                self.drivetrain.drive_to_position(self.dash_target_position.get())
+            if self.pid_mode == DrivetrainState.PID_VELOCITY:
+                self.drivetrain.velocity_control(self.dash_target_vel_left.get(), self.dash_target_vel_right.get())
+
+        # rotate through PID control types
+        if self.driver.get_toggle_pid_type_pressed():
+            self.pid_mode = {
+                DrivetrainState.PID_STRAIGHT: DrivetrainState.PID_TURNING,
+                DrivetrainState.PID_TURNING: DrivetrainState.PID_VELOCITY,
+                DrivetrainState.PID_VELOCITY: DrivetrainState.PID_STRAIGHT
+            }[self.pid_mode]
+
+        # update values from dash if requested
+        if self.driver.get_update_pid_dash():
+            self.drivetrain.pid_manager.update_from_dash()
+
+        if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
+            driver_x, driver_y = self.driver.get_curvature_output()
+            self.drivetrain.curvature_drive(driver_y, driver_x)
+        elif self.pid_mode == DrivetrainState.PID_TURNING:
+            self.drivetrain.turn_to_angle(self.dash_target_angle.get())
+        elif self.pid_mode == DrivetrainState.PID_STRAIGHT:
+            self.drivetrain.drive_to_position(self.dash_target_position.get())
+        elif self.pid_mode == DrivetrainState.PID_VELOCITY:
+            self.drivetrain.velocity_control(self.dash_target_vel_left.get(), self.dash_target_vel_right.get())
 
         # revert to manual control if enabled
         if self.driver.get_manual_control_override():
             self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
-
-        # handle intake control
-        # lift
-        intake_power = self.sysop.get_intake_lift_axis()
-        if intake_power > 0:
-            self.intake_lift.raise_lift(intake_power)
-        elif intake_power < 0:
-            self.intake_lift.lower_lift(intake_power)
-        else:
-            self.intake_lift.stop()
-
-        # # intake rollers
-        if self.sysop.get_intake_intake():
-            self.intake_roller.intake()
-        elif self.sysop.get_intake_outtake():
-            self.intake_roller.outtake()
-        else:
-            self.intake_roller.stop()
 
 if __name__ == '__main__':
     wpilib.run(Robot)
