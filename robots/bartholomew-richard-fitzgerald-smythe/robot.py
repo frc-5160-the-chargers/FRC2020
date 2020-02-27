@@ -50,8 +50,11 @@ class Robot(magicbot.MagicRobot):
         self.differential_drive = wpilib.drive.DifferentialDrive(self.left_motors, self.right_motors)
         self.differential_drive.setMaxOutput(RobotMap.Drivetrain.max_motor_power)
 
-        self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_a, RobotMap.Encoders.left_encoder_b)
-        self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_a, RobotMap.Encoders.right_encoder_b)
+        self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_b, RobotMap.Encoders.left_encoder_a)
+
+        self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_b, RobotMap.Encoders.right_encoder_a)
+        self.right_encoder.setReverseDirection(True)
+        
         self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
         self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
 
@@ -77,7 +80,7 @@ class Robot(magicbot.MagicRobot):
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
         
-        self.rio_controller = wpilib.RobotController()
+        # self.rio_controller = wpilib.RobotController()
 
         # set up dashboard
         self.pid_mode = DrivetrainState.PID_TURNING
@@ -123,21 +126,21 @@ class Robot(magicbot.MagicRobot):
 
         # handle intake control
         # lift
-        # intake_power = self.sysop.get_intake_lift_axis()
-        # if intake_power > 0:
-        #     self.intake_lift.raise_lift(intake_power)
-        # elif intake_power < 0:
-        #     self.intake_lift.lower_lift(intake_power)
-        # else:
-        #     self.intake_lift.stop()
+        intake_power = self.sysop.get_intake_lift_axis()
+        if intake_power > 0:
+            self.intake_lift.raise_lift(intake_power)
+        elif intake_power < 0:
+            self.intake_lift.lower_lift(intake_power)
+        else:
+            self.intake_lift.stop()
 
-        # intake rollers
-        # if self.sysop.get_intake_intake():
-        #     self.intake_roller.intake()
-        # elif self.sysop.get_intake_outtake():
-        #     self.intake_roller.outtake()
-        # else:
-        #     self.intake_roller.stop()
+        # # intake rollers
+        if self.sysop.get_intake_intake():
+            self.intake_roller.intake()
+        elif self.sysop.get_intake_outtake():
+            self.intake_roller.outtake()
+        else:
+            self.intake_roller.stop()
 
 if __name__ == '__main__':
     wpilib.run(Robot)

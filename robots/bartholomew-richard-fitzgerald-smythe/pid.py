@@ -1,6 +1,6 @@
-from wpilib import PIDController
+from wpilib.controller import PIDController
 
-from utils import PIDValue
+from utils import PIDValue, clamp
 from dash import get_pid, put_pid
 
 import math
@@ -27,11 +27,13 @@ class SuperPIDController:
 
         self.pid_values = pid_values
 
-        self.pid_controller = PIDController(
-            0, 0, 0,
-            f_in,
-            lambda x: f_out(x + ff(self.get_target(), x))
-        )
+        self.pid_controller = PIDController(0, 0, 0)
+
+        self.f_in = f_in
+        self.ff = ff
+
+        self.output_range = (-1, 1)
+
         self.pid_values.update_controller(self.pid_controller)
 
     def get_target(self):
@@ -41,8 +43,8 @@ class SuperPIDController:
             return 0
 
     def configure_controller(self, output_range=(-1, 1), percent_tolerance=1):
-        self.pid_controller.setOutputRange(output_range[0], output_range[1])
-        self.pid_controller.setPercentTolerance(percent_tolerance)
+        self.output_range = output_range
+        self.pid_controller.setTolerance(percent_tolerance)
 
     def update_values(self, pid_values: PIDValue):
         self.pid_values = pid_values
@@ -57,15 +59,19 @@ class SuperPIDController:
             put_pid(self.pid_key, self.pid_values)
 
     def get_on_target(self):
-        return self.pid_controller.onTarget() if self.pid_controller.isEnabled() else True
+        return self.pid_controller.atSetpoint()
+
+    def calculate_output(self):
+        pid_output = self.pid_controller.calculate(self.f_in())
+        output = pid_output + self.ff(self.get_target(), pid_output)
+        output = clamp(output, self.output_range[0], self.output_range[1])
+        return output
 
     def stop(self):
         self.reset()
-        self.pid_controller.disable()
 
     def start(self):
         self.reset()
-        self.pid_controller.enable()
 
     def reset(self):
         self.pid_controller.reset()

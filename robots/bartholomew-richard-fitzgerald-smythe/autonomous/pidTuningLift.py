@@ -37,7 +37,7 @@ class PidTuningDrivetrainAuto:
         if self.driver.get_update_telemetry():
             for t in self.tunables:
                 t.push()
-            self.intake_lift.pid_manager.push_to_dash()
+            self.intake_lift.pid_controller.push_to_dash()
 
         dash.putNumber("Lift position", self.intake_lift.get_position())
             
@@ -47,11 +47,15 @@ class PidTuningDrivetrainAuto:
 
         # update values from dash if requested
         if self.driver.get_update_pid_dash():
-            self.intake_lift.pid_manager.update_from_dash()
+            self.intake_lift.pid_controller.update_from_dash()
 
         if self.intake_lift.state == IntakeLiftState.PID_CONTROLLED:
             self.intake_lift.set_position_pid(self.dash_target_lift_position.get(0))
 
+        dash.putNumber("Motor power", self.intake_lift.intake_lift_motor.get())
+        dash.putNumber("Pid error", self.intake_lift.pid_controller.pid_controller.getError())
+        dash.putNumber("Pid output", self.intake_lift.intake_lift_motor.get())
+
         # revert to manual control if enabled
         if self.driver.get_manual_control_override():
-            pass
+            self.intake_lift.state = IntakeLiftState.STOPPED

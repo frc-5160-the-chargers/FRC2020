@@ -1,7 +1,7 @@
 from rev import CANSparkMax
 from ctre import WPI_TalonSRX
 
-from wpilib import PIDController
+from wpilib.controller import PIDController
 
 class SparkMotorConfig:
     def __init__(self, voltage_compensation, stall_current_limit, default_mode, ramp_rate, reverse_motor=False):
@@ -40,7 +40,7 @@ def config_talon(talon: WPI_TalonSRX, motor_config: TalonMotorConfig):
     talon.configContinuousCurrentLimit(motor_config.continuous_current)
     talon.setNeutralMode(motor_config.default_mode)
     talon.configNeutralDeadband(motor_config.deadband)
-    talon.configOpenLoopRamp(motor_config.ramp_rate)
+    # talon.configOpenLoopRamp(motor_config.ramp_rate)
     talon.setInverted(motor_config.reversed)
 
 def clamp(i, mi, ma):
@@ -67,6 +67,4 @@ class PIDValue:
         self.d = d
 
     def update_controller(self, controller: PIDController) -> None:
-        controller.P = self.p
-        controller.I = self.i
-        controller.D = self.d
+        controller.setPID(self.p, self.i, self.d)

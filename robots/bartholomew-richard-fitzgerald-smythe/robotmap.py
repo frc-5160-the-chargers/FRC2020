@@ -52,8 +52,8 @@ class RobotMap:
         motor_port = 5
         max_power = .4
 
-        max_power_up = .4
-        max_power_down = .1
+        max_power_up = .6
+        max_power_down = .6
 
         motor_config = TalonMotorConfig(
             voltage_saturation=11,
@@ -61,7 +61,8 @@ class RobotMap:
             peak_current=60,
             continuous_current=39,
             default_mode=NeutralMode.Brake,
-            ramp_rate=.2
+            ramp_rate=.2,
+            reverse_motor=True
         )
 
         encoder_distance_per_pulse = 360/4096 * (24/60)
@@ -81,7 +82,7 @@ class RobotMap:
         motor_port = 6
         max_power = .4
 
-        roller_power = .2
+        roller_power = .4
 
         motor_config = TalonMotorConfig(
             voltage_saturation=11,

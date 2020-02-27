@@ -18,8 +18,8 @@ class Driver:
         return abs(x) <= RobotMap.OI.drivetrain_rotation_assist_deadband
 
     def get_raw_output(self):
-        x = self.controller.getX()
-        y = self.controller.getY(XboxController.Hand.kLeft)
+        x = self.controller.getX(XboxController.Hand.kRightHand)
+        y = self.controller.getY(XboxController.Hand.kLeftHand)
         return x, y
 
     def get_curvature_output(self):
@@ -64,5 +64,5 @@ class Sysop:
         return mapped
 
     def get_intake_lift_axis(self):
-        raw_axis = self.controller.getY(self.controller.Hand.kRight)
+        raw_axis = self.controller.getY(XboxController.Hand.kRightHand)
         return self.process_lift_axis(raw_axis)
