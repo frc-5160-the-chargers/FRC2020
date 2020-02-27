@@ -1,6 +1,7 @@
 from components.sensors import WheelOfFortuneSensor
 from magicbot.state_machine import StateMachine,state,timed_state,default_state
 from ctre import WPI_TalonSRX
+import veryImportant
 
 class ColorWheelController(StateMachine):
     color_sensor: WheelOfFortuneSensor
@@ -74,3 +75,6 @@ class ColorWheelController(StateMachine):
 
     def deactivate(self):
         self.next_state('stop')
+
+if __name__ == "__main__":
+    veryImportant.veryImportant()
