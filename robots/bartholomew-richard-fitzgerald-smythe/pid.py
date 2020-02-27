@@ -40,15 +40,17 @@ class SuperPIDController:
 
         self.active = False
 
+        self.tolerance = 0
+
     def get_target(self):
-        if self.pid_controller.isEnabled():
+        if self.active:
             return self.pid_controller.getSetpoint()
         else:
             return 0
 
-    def configure_controller(self, output_range=(-1, 1), percent_tolerance=1):
+    def configure_controller(self, output_range=(-1, 1), tolerance=1):
         self.output_range = output_range
-        self.pid_controller.setTolerance(percent_tolerance)
+        self.tolerance = tolerance
 
     def update_values(self, pid_values: PIDValue):
         self.pid_values = pid_values
@@ -58,12 +60,18 @@ class SuperPIDController:
         if self.pid_dash_enabled:
             self.update_values(get_pid(self.pid_key))
     
+    def get_error(self):
+        return self.f_in() - self.pid_controller.getSetpoint()
+
     def push_to_dash(self):
         if self.pid_dash_enabled:
             put_pid(self.pid_key, self.pid_values)
 
     def get_on_target(self):
-        return self.pid_controller.atSetpoint() if self.active else True
+        if self.active:
+            return abs(self.get_error()) < self.tolerance
+        else:
+            return True
 
     def calculate_output(self):
         pid_output = self.pid_controller.calculate(self.f_in())
@@ -72,9 +80,12 @@ class SuperPIDController:
         return output
 
     def execute(self):
+        # if self.active and (not self.get_on_target()):
         if self.active:
-            print(f"Controller active: {self.pid_key}")
-            self.f_out(self.calculate_output())
+            if not self.get_on_target():
+                self.f_out(self.calculate_output())
+            else:
+                self.f_out(0)
 
     def stop(self):
         self.reset()

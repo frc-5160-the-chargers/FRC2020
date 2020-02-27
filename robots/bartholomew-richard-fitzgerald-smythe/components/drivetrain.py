@@ -98,7 +98,7 @@ class Drivetrain:
         )
         self.turn_pid.configure_controller(
             output_range=(-1, 1),
-            percent_tolerance=1
+            tolerance=1
         )
 
         self.position_pid = SuperPIDController(
@@ -110,7 +110,7 @@ class Drivetrain:
         )
         self.position_pid.configure_controller(
             output_range=(-1, 1),
-            percent_tolerance=1
+            tolerance=0.5
         )
 
         self.velocity_left_pid = SuperPIDController(
@@ -122,7 +122,7 @@ class Drivetrain:
         )
         self.velocity_left_pid.configure_controller(
             output_range=(-1, 1),
-            percent_tolerance=1
+            tolerance=0
         )
 
         self.velocity_right_pid = SuperPIDController(
@@ -134,7 +134,7 @@ class Drivetrain:
         )
         self.velocity_right_pid.configure_controller(
             output_range=(-1, 1),
-            percent_tolerance=1
+            tolerance=0
         )
 
         self.pid_manager = PidManager([

@@ -66,3 +66,18 @@ class Sysop:
     def get_intake_lift_axis(self):
         raw_axis = self.controller.getY(XboxController.Hand.kRightHand)
         return self.process_lift_axis(raw_axis)
+
+    def process_climb_axis(self, i):
+        i = math.copysign(deadzone(i, RobotMap.OI.climb_deadband) ** 2, i)
+        return map_value(i, -1, 1, -.8, .8)
+
+    def get_climb_axis(self):
+        if self.controller.getXButton():
+            return self.process_climb_axis(self.controller.getY(XboxController.Hand.kLeftHand))
+        return 0
+        
+    def get_intake_raise(self):
+        return self.controller.getBumperPressed(XboxController.Hand.kRightHand)
+
+    def get_intake_lower(self):
+        return self.controller.getBumperPressed(XboxController.Hand.kLeftHand)

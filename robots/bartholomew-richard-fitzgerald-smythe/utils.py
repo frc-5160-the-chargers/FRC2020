@@ -32,7 +32,7 @@ class TalonMotorConfig:
 
 def config_talon(talon: WPI_TalonSRX, motor_config: TalonMotorConfig):
     # when deploying it might be a somewhat good idea to actually uncomment this next line
-    # talon.configFactoryDefault()
+    talon.configFactoryDefault()
     talon.enableVoltageCompensation(True)
     talon.configVoltageCompSaturation(motor_config.voltage_saturation)
     talon.enableCurrentLimit(True)
