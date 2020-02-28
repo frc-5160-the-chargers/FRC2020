@@ -82,7 +82,7 @@ class RobotMap:
         motor_port = 6
         max_power = .4
 
-        roller_power = .6
+        roller_power = .5
 
         motor_config = TalonMotorConfig(
             voltage_saturation=11,
@@ -104,7 +104,8 @@ class RobotMap:
             peak_current=60,
             continuous_current=39,
             default_mode=NeutralMode.Brake,
-            ramp_rate=0
+            ramp_rate=0,
+            reverse_motor=True
         )
     
     class ColorWheel:

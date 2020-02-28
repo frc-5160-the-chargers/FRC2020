@@ -75,3 +75,27 @@
 
         if self.intake_lift.state == IntakeLiftState.PID_CONTROLLED:
             self.intake_lift.set_position_pid(self.dash_target_lift_position.get(0))
+
+
+
+
+
+
+
+
+        # set up dashboard
+        self.pid_mode = DrivetrainState.PID_TURNING
+
+        self.dash_target_angle = Tunable("Target Angle")
+        self.dash_target_position = Tunable("Target Position")
+        self.dash_target_vel_left = Tunable("Target Velocity Left")
+        self.dash_target_vel_right = Tunable("Target Velocity Right")
+        self.dash_target_lift_position = Tunable("Target Position Lift")
+
+        self.tunables = [
+            self.dash_target_angle,
+            self.dash_target_position,
+            self.dash_target_vel_left,
+            self.dash_target_vel_right,
+            self.dash_target_lift_position
+        ]

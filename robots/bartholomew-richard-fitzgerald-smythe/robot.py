@@ -17,6 +17,7 @@ from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
+from components.climber import Climber
 from components.sensors import Encoders, NavX
 
 class Robot(magicbot.MagicRobot):
@@ -30,6 +31,8 @@ class Robot(magicbot.MagicRobot):
     intake_roller: IntakeRoller
 
     intake: Intake
+
+    climber: Climber
 
     def createObjects(self):
         # initialize physical objects
@@ -71,39 +74,16 @@ class Robot(magicbot.MagicRobot):
         self.intake_roller_motor.configPeakOutputReverse(-RobotMap.IntakeRoller.max_power)
         config_talon(self.intake_roller_motor, RobotMap.IntakeRoller.motor_config)
 
-        # self.intake_lift_encoder = wpilib.Encoder(RobotMap.IntakeLift.encoder_port_b, RobotMap.IntakeLift.encoder_port_a)
-        # self.intake_lift_encoder.reset()
-        # self.intake_lift_encoder.setSamplesToAverage(RobotMap.IntakeLift.encoder_averaging)
-        # self.intake_lift_encoder.setDistancePerPulse(RobotMap.IntakeLift.encoder_distance_per_pulse)
-
         self.climber_motor = WPI_TalonSRX(RobotMap.Climber.motor_port)
 
         # controllers and electrical stuff
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
-        
-        # self.rio_controller = wpilib.RobotController()
-
-        # set up dashboard
-        self.pid_mode = DrivetrainState.PID_TURNING
-
-        self.dash_target_angle = Tunable("Target Angle")
-        self.dash_target_position = Tunable("Target Position")
-        self.dash_target_vel_left = Tunable("Target Velocity Left")
-        self.dash_target_vel_right = Tunable("Target Velocity Right")
-        self.dash_target_lift_position = Tunable("Target Position Lift")
-
-        self.tunables = [
-            self.dash_target_angle,
-            self.dash_target_position,
-            self.dash_target_vel_left,
-            self.dash_target_vel_right,
-            self.dash_target_lift_position
-        ]
 
     def reset_subsystems(self):
         self.drivetrain.reset()
-        self.intake.reset()
+        self.intake.reset() # TODO this'll need to be different when we run auto
+        self.climber.reset()
 
     def teleopInit(self):
         self.reset_subsystems()
@@ -150,7 +130,7 @@ class Robot(magicbot.MagicRobot):
             print("INTAKE ROLLER ERROR")
 
         try:
-            self.climber_motor.set(self.sysop.get_climb_axis())
+            self.climber.set_power(self.sysop.get_climb_axis())
         except:
             print("CLIMBER ERROR")
 

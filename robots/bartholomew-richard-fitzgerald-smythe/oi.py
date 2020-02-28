@@ -69,11 +69,14 @@ class Sysop:
 
     def process_climb_axis(self, i):
         i = math.copysign(deadzone(i, RobotMap.OI.climb_deadband) ** 2, i)
-        return map_value(i, -1, 1, -.8, .8)
+        return map_value(i, -1, 1, -RobotMap.Climber.max_power, RobotMap.Climber.max_power)
 
     def get_climb_axis(self):
-        if self.controller.getXButton():
-            return self.process_climb_axis(self.controller.getY(XboxController.Hand.kLeftHand))
+        power = -self.process_climb_axis(self.controller.getY(XboxController.Hand.kLeftHand))
+        if self.controller.getXButton() and power > 0:
+            return -power
+        if self.controller.getYButton() and power < 0:
+            return -power
         return 0
         
     def get_intake_raise(self):
