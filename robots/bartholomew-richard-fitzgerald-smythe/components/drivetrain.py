@@ -211,6 +211,9 @@ class Drivetrain:
             self.velocity_left_pid.run_setpoint(left_velocity)
             self.velocity_right_pid.run_setpoint(right_velocity)
 
+    def stop(self):
+        self.tank_drive(0, 0)
+
     # TODO fully implement arc drive as defined in kinematics
     # once that's done we can then do bezier curve nonsense
     def arc_drive(self, contraints: ArcDrive):
