@@ -8,13 +8,13 @@ pylint = "*"
 rope = "*"
 
 [packages]
-pyfrc = "==2019.0.2"
-wpilib = "==2019.2.3"
-marsutils = "==0.5.0"
-pynetworktables = "==2019.0.2"
-robotpy-ctre = "==2019.3.2"
-robotpy-navx = "==2019.0.1"
-robotpy-rev = "==2019.0.2"
+pyfrc = "*"
+wpilib = "*"
+marsutils = "*"
+pynetworktables = "*"
+robotpy-ctre = "*"
+robotpy-navx = "*"
+robotpy-rev = "*"
 pygame = "*"
 
 [requires]

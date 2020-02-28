@@ -19,3 +19,5 @@ tests/
 
 # don't send pipenv metadata
 *.lock
+
+todo.md
