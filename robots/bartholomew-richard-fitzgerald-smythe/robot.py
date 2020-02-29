@@ -30,7 +30,7 @@ class Robot(magicbot.MagicRobot):
     navx: NavX
     drivetrain: Drivetrain
 
-    i2c_color_sensor: WheelOfFortuneSensor
+    color_sensor: WheelOfFortuneSensor
     fortune_controller: ColorWheelController
 
     intake_lift: IntakeLift
