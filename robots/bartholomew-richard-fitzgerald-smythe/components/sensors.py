@@ -6,7 +6,6 @@ from rev.color import ColorSensorV3
 
 from utils import average
 from robotmap import RobotMap
-from fieldMeasurements import ColorWheel
 
 class EncoderSide:
     BOTH = 0

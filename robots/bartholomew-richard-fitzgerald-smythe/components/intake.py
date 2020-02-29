@@ -75,6 +75,10 @@ class IntakeLift:
         self.position = IntakeLiftPosition.RAISED
         self.state = IntakeLiftState.PID_CONTROLLED
 
+    def set_match_start(self):
+        self.position = IntakeLiftPosition.MATCH_START
+        self.state = IntakeLiftState.PID_CONTROLLED
+
     def stop(self):
         self.pid_controller.stop()
         self.state = IntakeLiftState.STOPPED

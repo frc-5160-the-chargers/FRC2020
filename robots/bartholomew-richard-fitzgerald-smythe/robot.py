@@ -94,7 +94,7 @@ class Robot(magicbot.MagicRobot):
 
     def reset_subsystems(self):
         self.drivetrain.reset()
-        self.intake.reset() # TODO this'll need to be different when we run auto
+        self.intake.reset()
         self.climber.reset()
 
     def teleopInit(self):

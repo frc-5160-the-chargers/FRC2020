@@ -31,23 +31,14 @@ class RobotMap:
         )
 
         max_motor_power = .35
+        max_auto_power = .35
 
-        # TODO all of these PID values are taken from kirkland
-        kF_turn = .3
-        kF_straight = .15
-        kF_velocity = .2
-
-        turn_pid = PIDValue(-0.0003, 0, -0.001)
+        # TODO retune
+        turn_pid = PIDValue(-0.035, 0, -0.001)
         turn_pid_key = "Drivetrain Turn PID"
 
         position_pid = PIDValue(-0.035, 0, -0.001)
         position_pid_key = "Drivetrian Position PID"
-
-        velocity_left = PIDValue(0, 0, 0)
-        velocity_left_key = "Left Velocity PID"
-
-        velocity_right = PIDValue(0, 0, 0)
-        velocity_right_key = "Right Velocity PID"
     
     class IntakeLift:
         motor_port = 5

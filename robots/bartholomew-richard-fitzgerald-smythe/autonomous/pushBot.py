@@ -1,6 +1,7 @@
 from magicbot import AutonomousStateMachine, timed_state, state
 
 from components.drivetrain import Drivetrain, DrivetrainState
+from components.intake import Intake
 
 from fieldMeasurements import FieldMeasurements
 
@@ -10,11 +11,14 @@ class PushBotAuto(AutonomousStateMachine):
     DEFAULT = False
 
     drivetrain: Drivetrain
+    intake: Intake
 
     @state(first=True)
     def drive_towards_stations(self, initial_call):
         if initial_call:
             self.drivetrain.drive_to_position(FieldMeasurements.PushBotAuto.initial_drive_distance)
+            self.intake.reset()
+            self.intake.intake_lift.set_match_start()
         elif self.drivetrain.pid_manager.get_on_target():
             self.drivetrain.stop()
             self.next_state('turn_towards_robot')

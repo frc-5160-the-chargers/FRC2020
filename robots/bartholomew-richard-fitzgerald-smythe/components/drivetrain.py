@@ -83,7 +83,6 @@ class DrivetrainState:
     # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
-    PID_VELOCITY = 22
 
 class Drivetrain:
     powertrain: Powertrain
@@ -99,7 +98,7 @@ class Drivetrain:
             pid_key=RobotMap.Drivetrain.turn_pid_key
         )
         self.turn_pid.configure_controller(
-            output_range=(-1, 1),
+            output_range=(-RobotMap.Drivetrain.max_auto_power, RobotMap.Drivetrain.max_auto_power),
             tolerance=1
         )
 
@@ -111,39 +110,13 @@ class Drivetrain:
             pid_key=RobotMap.Drivetrain.position_pid_key
         )
         self.position_pid.configure_controller(
-            output_range=(-1, 1),
+            output_range=(-RobotMap.Drivetrain.max_auto_power, RobotMap.Drivetrain.max_auto_power),
             tolerance=0.5
-        )
-
-        self.velocity_left_pid = SuperPIDController(
-            pid_values=RobotMap.Drivetrain.velocity_left,
-            f_in=lambda: self.get_velocity(EncoderSide.LEFT),
-            f_out=lambda x: self.powertrain.set_tank_powers(left_power=x),
-            f_feedforwards=lambda target, error: ff_flywheel(RobotMap.Drivetrain.kF_velocity, target, error),
-            pid_key=RobotMap.Drivetrain.velocity_left_key
-        )
-        self.velocity_left_pid.configure_controller(
-            output_range=(-1, 1),
-            tolerance=0
-        )
-
-        self.velocity_right_pid = SuperPIDController(
-            pid_values=RobotMap.Drivetrain.velocity_right,
-            f_in=lambda: self.get_velocity(EncoderSide.RIGHT),
-            f_out=lambda x: self.powertrain.set_tank_powers(right_power=x),
-            f_feedforwards=lambda target, error: ff_flywheel(RobotMap.Drivetrain.kF_velocity, target, error),
-            pid_key=RobotMap.Drivetrain.velocity_right_key
-        )
-        self.velocity_right_pid.configure_controller(
-            output_range=(-1, 1),
-            tolerance=0
         )
 
         self.pid_manager = PidManager([
             self.turn_pid,
             self.position_pid,
-            self.velocity_left_pid,
-            self.velocity_right_pid
         ])
 
         self.reset_state()
@@ -205,24 +178,8 @@ class Drivetrain:
             self.state = DrivetrainState.PID_STRAIGHT
             self.position_pid.run_setpoint(position)
 
-    def velocity_control(self, left_velocity, right_velocity):
-        if self.state != DrivetrainState.PID_VELOCITY:
-            self.pid_manager.stop_controllers()
-            self.encoders.reset()
-            self.state = DrivetrainState.PID_VELOCITY
-            self.velocity_left_pid.run_setpoint(left_velocity)
-            self.velocity_right_pid.run_setpoint(right_velocity)
-
     def stop(self):
         self.tank_drive(0, 0)
-
-    # TODO fully implement arc drive as defined in kinematics
-    # once that's done we can then do bezier curve nonsense
-    def arc_drive(self, contraints: ArcDrive):
-        if contraints.valid:
-            self.velocity_control(contraints.v_l, contraints.v_r)
-        else:
-            self.powertrain.tank_drive(0, 0)
 
     def execute(self):
         self.pid_manager.execute_controllers()
