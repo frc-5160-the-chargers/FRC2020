@@ -30,7 +30,7 @@ class ColorWheelController:
         
     def position_control(self, target_color):
         # check and see if on target color
-        current_color = self.color_sensor.get_color()
+        current_color = self.i2c_color_sensor.get_color()
         if current_color == target_color:
             self.state = ColorWheelState.ON_TARGET
             self.power = 0

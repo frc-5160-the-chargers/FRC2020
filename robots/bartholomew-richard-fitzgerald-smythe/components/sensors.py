@@ -80,7 +80,7 @@ class WheelOfFortuneColor:
 
 class WheelOfFortuneSensor:
     # i feel like this is a logic bomb lul
-    color_sensor: ColorSensorV3
+    i2c_color_sensor: ColorSensorV3
     
     COLOR_VALUES = [(0,255,255),(0,255,0),(255,0,0),(0,0,255)]
     COLOR_NAMES = [WheelOfFortuneColor.BLUE, WheelOfFortuneColor.GREEN, WheelOfFortuneColor.RED, WheelOfFortuneColor.YELLOW] # counterclockwise order
@@ -100,11 +100,11 @@ class WheelOfFortuneSensor:
         return self.COLOR_NAMES[differences.index(min(differences))]
         
     def get_rgb(self):
-        color_raw = self.color_sensor.getColor()
+        color_raw = self.i2c_color_sensor.getColor()
         return (color_raw.red, color_raw.blue, color_raw.green)
 
     def get_ir(self):
-        return self.color_sensor.getIR()
+        return self.i2c_color_sensor.getIR()
     
     def get_color(self):
         return self.nearest_color(self.get_rgb())
