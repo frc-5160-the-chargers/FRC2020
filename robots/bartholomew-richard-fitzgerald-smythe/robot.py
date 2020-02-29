@@ -76,6 +76,7 @@ class Robot(magicbot.MagicRobot):
         self.intake_lift_motor.configPeakOutputForward(RobotMap.IntakeLift.max_power)
         self.intake_lift_motor.configPeakOutputReverse(-RobotMap.IntakeLift.max_power)
         config_talon(self.intake_lift_motor, RobotMap.IntakeLift.motor_config)
+        self.intake_lift_motor.setSelectedSensorPosition(0)
 
         self.intake_roller_motor = WPI_TalonSRX(RobotMap.IntakeRoller.motor_port)
         self.intake_roller_motor.configPeakOutputForward(RobotMap.IntakeRoller.max_power)
@@ -101,7 +102,6 @@ class Robot(magicbot.MagicRobot):
 
     def reset_subsystems(self):
         self.drivetrain.reset()
-        self.intake.reset()
         self.climber.reset()
 
     def teleopInit(self):

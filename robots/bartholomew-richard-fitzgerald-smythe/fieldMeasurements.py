@@ -7,3 +7,7 @@ class FieldMeasurements:
         distance_to_bot = 50
 
         extra_distance = 20
+
+    class ScoringAuto:
+        drive_distance = 120-38.5
+        outtake_time = 3

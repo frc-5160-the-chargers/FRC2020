@@ -32,11 +32,14 @@ class RobotMap:
             reverse_motor=True
         )
 
-        max_motor_power = .35
+        max_motor_power = .4
         max_auto_power = .35
 
+        kF_straight = .15
+        kF_turn = .3
+
         # TODO retune
-        turn_pid = PIDValue(-0.035, 0, -0.001)
+        turn_pid = PIDValue(-0.0003, 0, -0.001)
         turn_pid_key = "Drivetrain Turn PID"
 
         position_pid = PIDValue(-0.035, 0, -0.001)
@@ -89,7 +92,7 @@ class RobotMap:
     class Climber:
         motor_port = 8
 
-        max_power = .8
+        max_power = .9
         
         motor_config = TalonMotorConfig(
             voltage_saturation=11,
