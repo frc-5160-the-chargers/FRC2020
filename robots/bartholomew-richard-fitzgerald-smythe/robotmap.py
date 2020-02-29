@@ -37,7 +37,7 @@ class RobotMap:
         kF_straight = .15
         kF_velocity = .2
 
-        turn_pid = PIDValue(-0.03, 0, 0)
+        turn_pid = PIDValue(-0.0003, 0, -0.001)
         turn_pid_key = "Drivetrain Turn PID"
 
         position_pid = PIDValue(-0.035, 0, -0.001)
@@ -75,8 +75,8 @@ class RobotMap:
         encoder_port_a = 4
         encoder_port_b = 5
 
-        up_position = 10
-        down_position = 76
+        up_position = 14
+        down_position = 73
 
     class IntakeRoller:
         motor_port = 6
@@ -90,7 +90,7 @@ class RobotMap:
             peak_current=60,
             continuous_current=39,
             default_mode=NeutralMode.Brake,
-            ramp_rate=.2
+            ramp_rate=.3
         )
 
     class Climber:
@@ -104,12 +104,20 @@ class RobotMap:
             peak_current=60,
             continuous_current=39,
             default_mode=NeutralMode.Brake,
-            ramp_rate=0,
-            reverse_motor=True
+            ramp_rate=0.25
         )
     
     class ColorWheel:
         motor_port = 7
+
+        motor_config = TalonMotorConfig(
+            voltage_saturation=11,
+            deadband=.05,
+            peak_current=60,
+            continuous_current=39,
+            default_mode=NeutralMode.Brake,
+            ramp_rate=0.2
+        )
 
     class Encoders:
         wheel_diameter = 7.4

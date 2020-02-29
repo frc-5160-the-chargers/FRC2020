@@ -19,7 +19,7 @@ class PushBotAuto(AutonomousStateMachine):
             self.drivetrain.stop()
             self.next_state('turn_towards_robot')
 
-    @state
+    @state()
     def turn_towards_robot(self, initial_call):
         if initial_call:
             self.drivetrain.turn_to_angle(-90)
@@ -27,7 +27,7 @@ class PushBotAuto(AutonomousStateMachine):
             self.drivetrain.stop()
             self.next_state('drive_towards_robot')
     
-    @state
+    @state()
     def drive_towards_robot(self, initial_call):
         if initial_call:
             self.drivetrain.drive_to_position(FieldMeasurements.PushBotAuto.distance_to_bot)
@@ -35,7 +35,7 @@ class PushBotAuto(AutonomousStateMachine):
             self.drivetrain.stop()
             self.next_state('turn_pre_push_bot')
     
-    @state
+    @state()
     def turn_pre_push_bot(self, initial_call):
         if initial_call:
             self.drivetrain.turn_to_angle(-90)
@@ -43,7 +43,7 @@ class PushBotAuto(AutonomousStateMachine):
             self.drivetrain.stop()
             self.next_state('push_bot')
 
-    @state
+    @state()
     def push_bot(self, initial_call):
         if initial_call:
             self.drivetrain.drive_to_position(

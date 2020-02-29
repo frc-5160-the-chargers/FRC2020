@@ -6,6 +6,7 @@ from wpilib import SmartDashboard as dash
 import magicbot
 
 from rev import CANSparkMax, MotorType
+from rev.color import ColorSensorV3
 from ctre import WPI_TalonSRX
 
 import navx
@@ -74,11 +75,22 @@ class Robot(magicbot.MagicRobot):
         self.intake_roller_motor.configPeakOutputReverse(-RobotMap.IntakeRoller.max_power)
         config_talon(self.intake_roller_motor, RobotMap.IntakeRoller.motor_config)
 
+        # climber
         self.climber_motor = WPI_TalonSRX(RobotMap.Climber.motor_port)
+        config_talon(self.climber_motor, RobotMap.Climber.motor_config)
+
+        # color wheel
+        self.color_wheel_motor = WPI_TalonSRX(RobotMap.ColorWheel.motor_port)
+        config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
+
+        self.color_sensor = ColorSensorV3()
 
         # controllers and electrical stuff
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
+
+        # camera server
+        wpilib.CameraServer.launch()
 
     def reset_subsystems(self):
         self.drivetrain.reset()

@@ -2,8 +2,11 @@ from wpilib import Encoder
 
 from navx import AHRS
 
+from rev.color import ColorSensorV3
+
 from utils import average
 from robotmap import RobotMap
+from fieldMeasurements import ColorWheel
 
 class EncoderSide:
     BOTH = 0
@@ -53,7 +56,7 @@ class NavX:
     navx_ahrs: AHRS
 
     def __init__(self):
-        pass
+        self.reset_state()
 
     def reset_state(self):
         pass

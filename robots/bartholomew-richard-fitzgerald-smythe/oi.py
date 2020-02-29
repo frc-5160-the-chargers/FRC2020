@@ -24,9 +24,14 @@ class Driver:
 
     def get_curvature_output(self):
         x, y = self.get_raw_output()
-        x = -math.copysign(abs(deadzone(x, RobotMap.OI.driver_deadband)) ** .5, x)
+        x = -math.copysign(abs(deadzone(x, RobotMap.OI.driver_deadband)) ** 3, x)
         y = math.copysign(abs(deadzone(y, RobotMap.OI.driver_deadband)) ** 2, y)
+        if self.get_beast_mode():
+            y *= -1
         return x, y
+
+    def get_beast_mode(self):
+        return self.controller.getBButton()
 
     def get_update_pid_dash(self):
         return self.controller.getXButtonPressed()
