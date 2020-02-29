@@ -86,6 +86,7 @@ class Robot(magicbot.MagicRobot):
         dash.putNumber("Current Right Velocity", self.encoders.get_velocity(EncoderSide.RIGHT))
         dash.putNumber("Battery Voltage", self.robot_controller.getBatteryVoltage())
         
+        
         dash.putString("Current PID Mode", {
             DriveMode.PID_DRIVE: "PID Drive",
             DriveMode.PID_TURN: "PID Turn",

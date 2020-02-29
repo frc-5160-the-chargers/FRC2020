@@ -3,6 +3,8 @@ import wpilib.drive
 
 from wpilib import SmartDashboard as dash
 
+from ctre import WPI_TalonSRX
+
 import magicbot
 
 from rev import CANSparkMax, MotorType
@@ -17,20 +19,22 @@ from robotmap import RobotMap
 from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
+from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFortuneColor
+from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
-from components.sensors import Encoders, NavX
 
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
-
     drivetrain: Drivetrain
+
+    color_sensor: WheelOfFortuneSensor
+    fortune_controller: ColorWheelController
 
     intake_lift: IntakeLift
     intake_roller: IntakeRoller
-
     intake: Intake
 
     climber: Climber
@@ -64,6 +68,9 @@ class Robot(magicbot.MagicRobot):
 
         self.navx_ahrs = navx.AHRS.create_spi()
 
+        self.driver = Driver(wpilib.XboxController(0))
+        self.sysop = Sysop(wpilib.XboxController(1))
+        
         # intake
         self.intake_lift_motor = WPI_TalonSRX(RobotMap.IntakeLift.motor_port)
         self.intake_lift_motor.configPeakOutputForward(RobotMap.IntakeLift.max_power)
@@ -83,7 +90,7 @@ class Robot(magicbot.MagicRobot):
         self.color_wheel_motor = WPI_TalonSRX(RobotMap.ColorWheel.motor_port)
         config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
 
-        self.color_sensor = ColorSensorV3()
+        self.i2c_color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
         # controllers and electrical stuff
         self.driver = Driver(wpilib.XboxController(0))
@@ -104,7 +111,6 @@ class Robot(magicbot.MagicRobot):
         try:
             # drive the drivetrain as needed
             driver_x, driver_y = self.driver.get_curvature_output()
-
             # manually handled driving
             if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
                 self.drivetrain.curvature_drive(driver_y, driver_x)
@@ -145,6 +151,33 @@ class Robot(magicbot.MagicRobot):
             self.climber.set_power(self.sysop.get_climb_axis())
         except:
             print("CLIMBER ERROR")
+
+        try:
+            manual_fortune_input = self.sysop.get_manual_fortune_axis()
+            fms_color_position = self.ds.getGameSpecificMessage()
+
+            dash.putString("Color sensor color", self.color_sensor.get_color())
+            dash.putString("FMS Color", fms_color_position)
+
+            if manual_fortune_input != 0:
+                self.fortune_controller.manual_power(manual_fortune_input)
+        
+            # elif self.sysop.get_position_control() and fms_color_position != "":
+            #     self.fortune_controller.position_control({
+            #         "B": WheelOfFortuneColor.BLUE,
+            #         "R": WheelOfFortuneColor.GREEN,
+            #         "G": WheelOfFortuneColor.RED,
+            #         "Y": WheelOfFortuneColor.YELLOW,
+            #     }[fms_color_position])
+
+            # TODO this is commented out because it'll be more effective to use manual control
+            # elif self.sysop.get_rotation_control():
+            #     self.fortune_controller.rotation_control()
+
+            elif self.fortune_controller.state == ColorWheelState.MANUAL:
+                self.fortune_controller.manual_power(0)
+        except:
+            print("COLOR WHEEL ERROR")
 
 if __name__ == '__main__':
     git_gud = lambda: wpilib.run(Robot)

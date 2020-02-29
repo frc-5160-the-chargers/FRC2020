@@ -89,3 +89,19 @@ class Sysop:
 
     def get_intake_lower(self):
         return self.controller.getBumperPressed(XboxController.Hand.kLeftHand)
+
+    def get_position_control(self):
+        return self.controller.getBackButtonPressed()
+    
+    def get_rotation_control(self):
+        return self.controller.getStartButtonPressed()
+
+    def get_manual_fortune_axis(self):
+        axis_right = self.controller.getTriggerAxis(XboxController.Hand.kRightHand)
+        axis_left = self.controller.getTriggerAxis(XboxController.Hand.kLeftHand)
+        if axis_right > RobotMap.OI.color_wheel_deadband:
+            return axis_right
+        elif axis_left > RobotMap.OI.color_wheel_deadband:
+            return -axis_left
+        else:
+            return 0

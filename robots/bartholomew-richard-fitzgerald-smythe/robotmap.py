@@ -13,6 +13,8 @@ class RobotMap:
         lift_deadband = .05
         climb_deadband = .1
 
+        color_wheel_deadband = .1
+
     class Drivetrain:
         motors_left = [1, 2]
         motors_right = [3, 4]
@@ -109,6 +111,11 @@ class RobotMap:
             default_mode=NeutralMode.Brake,
             ramp_rate=0.2
         )
+
+        spinning_power_position = 0.5
+        spinning_power_rotation = .7
+
+        max_power = .9
 
     class Encoders:
         wheel_diameter = 7.4

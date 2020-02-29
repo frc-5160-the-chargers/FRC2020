@@ -70,3 +70,41 @@ class NavX:
 
     def execute(self):
         pass
+
+class WheelOfFortuneColor:
+    NONE = "none"
+    BLUE = "blue"
+    GREEN = "green"
+    RED = "red"
+    YELLOW = "yellow"
+
+class WheelOfFortuneSensor:
+    # i feel like this is a logic bomb lul
+    i2c_color_sensor: ColorSensorV3
+    
+    COLOR_VALUES = [(0,255,255),(0,255,0),(255,0,0),(0,0,255)]
+    COLOR_NAMES = [WheelOfFortuneColor.BLUE, WheelOfFortuneColor.GREEN, WheelOfFortuneColor.RED, WheelOfFortuneColor.YELLOW] # counterclockwise order
+
+    def __init__(self):
+        pass
+
+    def execute(self):
+        pass
+
+    def nearest_color(self, rgb):
+        differences = [
+            sum([
+                abs(rgb[i] - color[i]) for i in range(3)
+            ]) for color in self.COLOR_VALUES
+        ]
+        return self.COLOR_NAMES[differences.index(min(differences))]
+        
+    def get_rgb(self):
+        color_raw = self.i2c_color_sensor.getColor()
+        return (color_raw.red, color_raw.blue, color_raw.green)
+
+    def get_ir(self):
+        return self.i2c_color_sensor.getIR()
+    
+    def get_color(self):
+        return self.nearest_color(self.get_rgb())
