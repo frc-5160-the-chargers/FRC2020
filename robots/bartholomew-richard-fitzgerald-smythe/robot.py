@@ -20,7 +20,7 @@ from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
 from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFortuneColor
-from components.colorWheel import ColorWheelController
+from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
 
@@ -153,26 +153,29 @@ class Robot(magicbot.MagicRobot):
             print("CLIMBER ERROR")
 
         try:
-            manual_fortune_input = self.sysop.get_manual_fortune_input()
+            manual_fortune_input = self.sysop.get_manual_fortune_axis()
             fms_color_position = self.ds.getGameSpecificMessage()
 
             dash.putString("Color sensor color", self.color_sensor.get_color())
             dash.putString("FMS Color", fms_color_position)
-    
+
             if manual_fortune_input != 0:
-                self.fortune_controller.manual_power_input(manual_fortune_input)
+                self.fortune_controller.manual_power(manual_fortune_input)
         
-            elif self.sysop.get_position_control() and fms_color_position != "":
-                self.fortune_controller.position_control({
-                    "B": WheelOfFortuneColor.BLUE,
-                    "R": WheelOfFortuneColor.GREEN,
-                    "G": WheelOfFortuneColor.RED,
-                    "Y": WheelOfFortuneColor.YELLOW,
-                }[fms_color_position])
+            # elif self.sysop.get_position_control() and fms_color_position != "":
+            #     self.fortune_controller.position_control({
+            #         "B": WheelOfFortuneColor.BLUE,
+            #         "R": WheelOfFortuneColor.GREEN,
+            #         "G": WheelOfFortuneColor.RED,
+            #         "Y": WheelOfFortuneColor.YELLOW,
+            #     }[fms_color_position])
 
             # TODO this is commented out because it'll be more effective to use manual control
             # elif self.sysop.get_rotation_control():
             #     self.fortune_controller.rotation_control()
+
+            elif self.fortune_controller.state == ColorWheelState.MANUAL:
+                self.fortune_controller.manual_power(0)
         except:
             print("COLOR WHEEL ERROR")
 
