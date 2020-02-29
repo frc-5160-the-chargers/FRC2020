@@ -4,7 +4,7 @@ class Climber:
     climber_motor: WPI_TalonSRX
 
     def __init__(self):
-        pass
+        self.reset_state()
 
     def reset_state(self):
         self.power = 0

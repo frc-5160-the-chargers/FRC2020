@@ -37,6 +37,7 @@ class Powertrain:
 
     # refactorsed and genericisized setters for power (good to use in PID controllers)
     def set_tank_powers(self, left_power=None, right_power=None):
+        self.mode = PowertrainMode.TANK_DRIVE
         self.power = self.rotation = 0
         if left_power != None:
             self.left_power = left_power
@@ -44,6 +45,7 @@ class Powertrain:
             self.right_power = right_power
 
     def set_arcade_powers(self, power=None, rotation=None):
+        self.mode = PowertrainMode.ARCADE_DRIVE
         self.left_power = self.right_power = 0 
         if power != None:
             self.power = power

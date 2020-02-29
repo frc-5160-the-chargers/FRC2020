@@ -24,9 +24,14 @@ class Driver:
 
     def get_curvature_output(self):
         x, y = self.get_raw_output()
-        x = -math.copysign(abs(deadzone(x, RobotMap.OI.driver_deadband)) ** .5, x)
+        x = -math.copysign(abs(deadzone(x, RobotMap.OI.driver_deadband)) ** 3, x)
         y = math.copysign(abs(deadzone(y, RobotMap.OI.driver_deadband)) ** 2, y)
+        if self.get_beast_mode():
+            y *= -1
         return x, y
+
+    def get_beast_mode(self):
+        return self.controller.getBButton()
 
     def get_update_pid_dash(self):
         return self.controller.getXButtonPressed()
@@ -42,12 +47,6 @@ class Driver:
 
     def get_update_telemetry(self):
         return self.controller.getYButtonPressed()
-
-    def get_toggle_fortune_auto(self):
-        return self.controller.getBumperPressed(XboxController.Hand.kRightHand);
-
-    def get_manual_fortune_input(self):
-        return self.controller.getTriggerAxis(XboxController.Hand.kRightHand)-self.controller.getTriggerAxis(XboxController.Hand.kLeftHand);
 
 class Sysop:
     def __init__(self, controller: XboxController):
@@ -90,3 +89,19 @@ class Sysop:
 
     def get_intake_lower(self):
         return self.controller.getBumperPressed(XboxController.Hand.kLeftHand)
+
+    def get_position_control(self):
+        return self.controller.getBackButtonPressed()
+    
+    def get_rotation_control(self):
+        return self.controller.getStartButtonPressed()
+
+    def get_manual_fortune_axis(self):
+        axis_right = self.controller.getTriggerAxis(XboxController.Hand.kRightHand)
+        axis_left = self.controller.getTriggerAxis(XboxController.Hand.kLeftHand)
+        if axis_right > RobotMap.OI.color_wheel_deadband:
+            return axis_right
+        elif axis_left > RobotMap.OI.color_wheel_deadband:
+            return -axis_left
+        else:
+            return 0

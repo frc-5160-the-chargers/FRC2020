@@ -19,7 +19,7 @@ from robotmap import RobotMap
 from dash import Tunable
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
-from components.sensors import Encoders, NavX, WheelOfFortuneSensor
+from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFortuneColor
 from components.colorWheel import ColorWheelController
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
@@ -28,17 +28,13 @@ class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
-
-    fortune_motor : WPI_TalonSRX
-
-    color_sensor : WheelOfFortuneSensor
-    fortune_controller : ColorWheelController
-
     drivetrain: Drivetrain
+
+    color_sensor: WheelOfFortuneSensor
+    fortune_controller: ColorWheelController
 
     intake_lift: IntakeLift
     intake_roller: IntakeRoller
-
     intake: Intake
 
     climber: Climber
@@ -72,12 +68,9 @@ class Robot(magicbot.MagicRobot):
 
         self.navx_ahrs = navx.AHRS.create_spi()
 
-        self.color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
-
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
         
-        self.rio_controller = wpilib.RobotController()
         # intake
         self.intake_lift_motor = WPI_TalonSRX(RobotMap.IntakeLift.motor_port)
         self.intake_lift_motor.configPeakOutputForward(RobotMap.IntakeLift.max_power)
@@ -89,13 +82,22 @@ class Robot(magicbot.MagicRobot):
         self.intake_roller_motor.configPeakOutputReverse(-RobotMap.IntakeRoller.max_power)
         config_talon(self.intake_roller_motor, RobotMap.IntakeRoller.motor_config)
 
+        # climber
         self.climber_motor = WPI_TalonSRX(RobotMap.Climber.motor_port)
+        config_talon(self.climber_motor, RobotMap.Climber.motor_config)
+
+        # color wheel
+        self.color_wheel_motor = WPI_TalonSRX(RobotMap.ColorWheel.motor_port)
+        config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
+
+        self.i2c_color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
         # controllers and electrical stuff
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
 
-        self.color_map = {'B':'blue','R':'red','G':'green','Y':'yellow'};
+        # camera server
+        wpilib.CameraServer.launch()
 
     def reset_subsystems(self):
         self.drivetrain.reset()
@@ -104,37 +106,6 @@ class Robot(magicbot.MagicRobot):
 
     def teleopInit(self):
         self.reset_subsystems()
-
-    def robotPeriodic(self):
-        if self.isEnabled():
-            # push all tunables
-            if self.driver.get_update_telemetry():
-                for t in self.tunables:
-                    t.push()
-                self.drivetrain.pid_manager.push_to_dash()
-            
-            self.fortune_controller.engage();
-
-            # update tunables
-            dash.putNumber("NavX Heading", self.navx.get_heading())
-            dash.putNumber("Drivetrain Position", self.drivetrain.encoders.get_position(EncoderSide.BOTH))
-            dash.putNumber("Left Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.LEFT))
-            dash.putNumber("Right Velocity", self.drivetrain.encoders.get_velocity(EncoderSide.RIGHT))
-            dash.putNumber("Voltage", self.rio_controller.getBatteryVoltage())
-
-            dash.putNumberArray("Color Wheel RGB",self.color_sensor.getColor());
-            dash.putNumberArray("Color Wheel Color Name",self.color_sensor.currentColor);
-            dash.putNumberArray("Color Wheel Active",self.fortune_controller.get_auto_activated());
-                        
-
-            dash.putString("PID Mode", {
-                DrivetrainState.PID_STRAIGHT: "Straight",
-                DrivetrainState.PID_TURNING: "Turning",
-                DrivetrainState.PID_VELOCITY: "Velocity"
-            }[self.pid_mode])
-
-            if self.driver.get_update_pid_dash():
-                self.drivetrain.pid_manager.update_from_dash()
 
     def teleopPeriodic(self):
         try:
@@ -155,33 +126,6 @@ class Robot(magicbot.MagicRobot):
             #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
         except:
             print("DRIVETRAIN ERROR")
-
-        if (self.driver.get_toggle_fortune_auto()):
-            data = self.ds.getGameSpecificMessage();
-            if (self.fortune_controller.get_auto_activated()):
-                if (data and data in self.color_map.keys()):
-                    self.fortune_controller.rotate_to_color(self.color_map[data]);
-                else:
-                    self.fortune_controller.rotate_by_steps(28);
-            else:
-                self.fortune_controller.deactivate();
-        
-        if (self.driver.get_manual_fortune_input() > 0):
-            self.fortune_controller.manual_power_input(self.driver.get_manual_fortune_input());
-
-        # use manual control if enabled
-        if self.driver.get_manual_control_override():
-            self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
-        
-        # rotate through PID control types
-        if self.driver.get_toggle_pid_type_pressed():
-            self.pid_mode = {
-                DrivetrainState.PID_STRAIGHT: DrivetrainState.PID_TURNING,
-                DrivetrainState.PID_TURNING: DrivetrainState.PID_VELOCITY,
-                DrivetrainState.PID_VELOCITY: DrivetrainState.PID_STRAIGHT
-            }[self.pid_mode]
-
-
 
         try:
             # move intake lift
@@ -207,6 +151,30 @@ class Robot(magicbot.MagicRobot):
             self.climber.set_power(self.sysop.get_climb_axis())
         except:
             print("CLIMBER ERROR")
+
+        try:
+            manual_fortune_input = self.sysop.get_manual_fortune_input()
+            fms_color_position = self.ds.getGameSpecificMessage()
+
+            dash.putString("Color sensor color", self.color_sensor.get_color())
+            dash.putString("FMS Color", fms_color_position)
+    
+            if manual_fortune_input != 0:
+                self.fortune_controller.manual_power_input(manual_fortune_input)
+        
+            elif self.sysop.get_position_control() and fms_color_position != "":
+                self.fortune_controller.position_control({
+                    "B": WheelOfFortuneColor.BLUE,
+                    "R": WheelOfFortuneColor.GREEN,
+                    "G": WheelOfFortuneColor.RED,
+                    "Y": WheelOfFortuneColor.YELLOW,
+                }[fms_color_position])
+
+            # TODO this is commented out because it'll be more effective to use manual control
+            # elif self.sysop.get_rotation_control():
+            #     self.fortune_controller.rotation_control()
+        except:
+            print("COLOR WHEEL ERROR")
 
 if __name__ == '__main__':
     git_gud = lambda: wpilib.run(Robot)

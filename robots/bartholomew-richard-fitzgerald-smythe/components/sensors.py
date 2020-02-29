@@ -2,9 +2,10 @@ from wpilib import Encoder
 
 from navx import AHRS
 
+from rev.color import ColorSensorV3
+
 from utils import average
 from robotmap import RobotMap
-from rev.color import ColorSensorV3
 
 class EncoderSide:
     BOTH = 0
@@ -54,7 +55,7 @@ class NavX:
     navx_ahrs: AHRS
 
     def __init__(self):
-        pass
+        self.reset_state()
 
     def reset_state(self):
         pass
@@ -70,28 +71,40 @@ class NavX:
     def execute(self):
         pass
 
+class WheelOfFortuneColor:
+    NONE = "none"
+    BLUE = "blue"
+    GREEN = "green"
+    RED = "red"
+    YELLOW = "yellow"
+
 class WheelOfFortuneSensor:
+    # i feel like this is a logic bomb lul
     color_sensor: ColorSensorV3
     
-
-    COLOR_VALUES = [(0,255,255),(0,255,0),(255,0,0),(0,0,255)];
-    COLOR_NAMES = ['blue','green','red','yellow']; #counterclockwise order
+    COLOR_VALUES = [(0,255,255),(0,255,0),(255,0,0),(0,0,255)]
+    COLOR_NAMES = [WheelOfFortuneColor.BLUE, WheelOfFortuneColor.GREEN, WheelOfFortuneColor.RED, WheelOfFortuneColor.YELLOW] # counterclockwise order
 
     def __init__(self):
-        self.current_color = None;
-        self.last_color = None;
+        pass
 
     def execute(self):
-        self.last_color = self.current_color;
-        self.current_color = self.nearest_color(self.get_rgb());
-        
+        pass
 
-    def nearest_color(self,rgb):
-        differences = [sum([abs(rgb[j]-color[j]) for j in range(3)]) for color in self.COLOR_VALUES];
-        return self.COLOR_NAMES[differences.index(min(differences))];
+    def nearest_color(self, rgb):
+        differences = [
+            sum([
+                abs(rgb[i] - color[i]) for i in range(3)
+            ]) for color in self.COLOR_VALUES
+        ]
+        return self.COLOR_NAMES[differences.index(min(differences))]
         
     def get_rgb(self):
-        return self.color_sensor.getColor();
+        color_raw = self.color_sensor.getColor()
+        return (color_raw.red, color_raw.blue, color_raw.green)
 
     def get_ir(self):
-        return self.color_sensor.getIR();
+        return self.color_sensor.getIR()
+    
+    def get_color(self):
+        return self.nearest_color(self.get_rgb())
