@@ -178,6 +178,9 @@ class Drivetrain:
             self.state = DrivetrainState.PID_STRAIGHT
             self.position_pid.run_setpoint(position)
 
+    def set_power_scaling(self, new_power_scaling):
+        self.powertrain.differential_drive.setMaxOutput(new_power_scaling)
+
     def stop(self):
         self.tank_drive(0, 0)
 

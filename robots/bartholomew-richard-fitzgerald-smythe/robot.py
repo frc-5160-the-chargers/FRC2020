@@ -115,6 +115,9 @@ class Robot(magicbot.MagicRobot):
             if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
                 self.drivetrain.curvature_drive(driver_y, driver_x)
 
+            # set turbo mode
+            self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
+
             # # check and see if we need to activate driver assists
             # if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
             #     self.drivetrain.drive_straight(driver_y)
