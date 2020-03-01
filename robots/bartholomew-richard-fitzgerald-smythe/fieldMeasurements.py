@@ -9,5 +9,5 @@ class FieldMeasurements:
         extra_distance = 20
 
     class ScoringAuto:
-        drive_distance = 120-38.5
+        drive_distance = 120-38
         outtake_time = 3
