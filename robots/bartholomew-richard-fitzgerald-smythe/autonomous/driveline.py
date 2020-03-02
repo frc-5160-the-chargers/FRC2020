@@ -7,7 +7,7 @@ from fieldMeasurements import FieldMeasurements
 
 class DriveLineAuto(AutonomousStateMachine):
     MODE_NAME = "Driveline Auto"
-    DEFAULT = True
+    DEFAULT = False
 
     drivetrain: Drivetrain
     intake: Intake

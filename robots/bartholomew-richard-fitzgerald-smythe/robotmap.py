@@ -34,7 +34,7 @@ class RobotMap:
 
         max_motor_power = .4
         max_auto_power = .35
-        turbo_mode_power = .5
+        turbo_mode_power = .57
 
         kF_straight = .15
         kF_turn = .3

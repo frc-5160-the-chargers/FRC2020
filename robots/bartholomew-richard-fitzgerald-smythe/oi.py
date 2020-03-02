@@ -49,11 +49,12 @@ class Driver:
         return self.controller.getYButtonPressed()
 
     def get_turbo_mode_modifier(self):
-        return self.controller.getTriggerAxis(XboxController.Hand.kRight)
+        return self.controller.getTriggerAxis(XboxController.Hand.kRightHand)
 
     def process_turbo_mode(self):
         modifier = self.get_turbo_mode_modifier()
-        return map_value(modifier, 0, 1, RobotMap.Drivetrain.max_motor_power, RobotMap.Drivetrain.turbo_mode_power)
+        x = map_value(modifier, 0, 1, RobotMap.Drivetrain.max_motor_power, RobotMap.Drivetrain.turbo_mode_power)
+        return x
 
 class Sysop:
     def __init__(self, controller: XboxController):

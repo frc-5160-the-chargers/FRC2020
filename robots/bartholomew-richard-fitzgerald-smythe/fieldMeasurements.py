@@ -11,3 +11,9 @@ class FieldMeasurements:
     class ScoringAuto:
         drive_distance = 120-38
         outtake_time = 3
+
+    class MultiScoringAuto:
+        backup_distance = 40
+        turn_degrees = 180-41 # to the right
+        drive_out_distance = 97
+        turn_degrees_final_alignment = 41

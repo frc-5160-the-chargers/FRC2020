@@ -8,7 +8,7 @@ from fieldMeasurements import FieldMeasurements
 class ScoringAuto(AutonomousStateMachine):
     # this auto will drive up against the scoring port and outtake
     MODE_NAME = "Basic Scoring Auto"
-    DEFAULT = False
+    DEFAULT = True
 
     drivetrain: Drivetrain
     intake: Intake

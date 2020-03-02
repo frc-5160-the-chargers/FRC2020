@@ -52,12 +52,12 @@ def average(l):
 def map_value(i, initial_min, initial_max, new_min, new_max):
     # perform a linear mapping of a value across spaces
     i = clamp(i, initial_min, initial_max)
-    i += initial_min
+    i -= initial_min
     distance = initial_max - initial_min
     percent = i/distance
     new_distance = new_max - new_min
     out = percent * new_distance
-    out -= new_min
+    out += new_min
     return out
 
 class PIDValue:
