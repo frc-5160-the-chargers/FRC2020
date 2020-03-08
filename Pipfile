@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+rope = "*"
+
+[packages]
+pyfrc = "*"
+wpilib = "*"
+marsutils = "*"
+pynetworktables = "*"
+robotpy-ctre = "*"
+robotpy-navx = "*"
+robotpy-rev = "*"
+pygame = "*"
+
+[requires]
+python_version = "3.8"

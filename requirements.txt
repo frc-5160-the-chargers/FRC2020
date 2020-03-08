@@ -1,0 +1,8 @@
+pyfrc
+wpilib
+marsutils
+pynetworktables
+robotpy-ctre
+robotpy-navx
+robotpy-rev
+pygame
