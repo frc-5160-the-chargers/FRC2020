@@ -23,7 +23,7 @@ from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFort
 from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
-#yo ruiyang was here
+#yo ruiyang was here test
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
