@@ -5,6 +5,7 @@ from wpilib import SpeedControllerGroup
 
 from robotmap import RobotMap
 
+from components.position_approximation import PosApprox
 from components.sensors import NavX, Encoders, EncoderSide
 
 from pid import SuperPIDController, ff_constant, ff_flywheel, PidManager
@@ -18,6 +19,8 @@ class PowertrainMode:
     ARCADE_DRIVE = 2
 
 class Powertrain:
+
+
     left_motors: SpeedControllerGroup
     right_motors: SpeedControllerGroup
 
@@ -87,6 +90,7 @@ class DrivetrainState:
     PID_STRAIGHT = 21
     
 class Drivetrain:
+    locations: PosApprox
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
@@ -122,6 +126,16 @@ class Drivetrain:
             self.turn_pid,
             self.position_pid,
         ])
+
+        self.locations = PosApprox([
+            [PosApprox.ENCODER_ONLY],
+            [PosApprox.LEFT_ENCODER_AND_GYRO],
+            [PosApprox.RIGHT_ENCODER_AND_GYRO],
+            [PosApprox.LEFT_ENCODER_AND_GYRO,PosApprox.RIGHT_ENCODER_AND_GYRO],
+            [PosApprox.OUTER_ENCODER_AND_GYRO],
+            [PosApprox.ENCODER_RC_GYRO_ARC],
+            [PosApprox.AVERAGE_ENCODER_AND_GYRO],
+            names=["Encoder only", "Left+Gyro", "Right+Gyro", "Left+Gyro & Right+Gyro Avg", "Outer+Gyro","Encoder RC & Gyro Arc", "Average Encoder & Gyro"]);
 
         self.reset_state()
 

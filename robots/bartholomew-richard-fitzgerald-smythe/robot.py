@@ -13,6 +13,7 @@ from ctre import WPI_TalonSRX
 
 import navx
 
+from networktables import NetworkTables
 from oi import Driver, Sysop
 from utils import config_spark, config_talon
 from robotmap import RobotMap
@@ -110,6 +111,7 @@ class Robot(magicbot.MagicRobot):
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
 
+        NetworkTables.initialize(server="roborio");
         # camera server
         wpilib.CameraServer.launch()
 
