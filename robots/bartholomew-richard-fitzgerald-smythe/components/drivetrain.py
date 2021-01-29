@@ -127,6 +127,8 @@ class Drivetrain:
             self.position_pid,
         ])
 
+        
+
         self.locations = PosApprox([
             [PosApprox.ENCODER_ONLY],
             [PosApprox.LEFT_ENCODER_AND_GYRO],
@@ -134,7 +136,7 @@ class Drivetrain:
             [PosApprox.LEFT_ENCODER_AND_GYRO,PosApprox.RIGHT_ENCODER_AND_GYRO],
             [PosApprox.OUTER_ENCODER_AND_GYRO],
             [PosApprox.ENCODER_RC_GYRO_ARC],
-            [PosApprox.AVERAGE_ENCODER_AND_GYRO],
+            [PosApprox.AVERAGE_ENCODER_AND_GYRO]],
             names=["Encoder only", "Left+Gyro", "Right+Gyro", "Left+Gyro & Right+Gyro Avg", "Outer+Gyro","Encoder RC & Gyro Arc", "Average Encoder & Gyro"]);
 
         self.reset_state()
@@ -151,6 +153,7 @@ class Drivetrain:
         self.navx.reset()
 
         self.reset_state()
+
 
     def get_heading(self):
         return self.navx.get_heading()
