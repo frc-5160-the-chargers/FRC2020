@@ -24,7 +24,10 @@ from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFort
 from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
+from components.position_approximation import PosApprox
 class Robot(magicbot.MagicRobot):
+    location: PosApprox
+
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX

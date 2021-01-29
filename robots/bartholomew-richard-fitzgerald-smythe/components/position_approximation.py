@@ -1,8 +1,9 @@
 #FILE IS DOMAIN OF HARRISON
 #DO NOT TOUCH SEMICOLONS
 import math
-from sensors import Encoders,EncoderSide, NavX
+from components.sensors import Encoders,EncoderSide, NavX
 from networktables import NetworkTables
+from wpilib import SmartDashboard
 
 
 class PosApprox:
@@ -31,12 +32,9 @@ class PosApprox:
         deltas = [inputStates[i] - self.last_positions[i] for i in range(3)];
         self.update(*deltas);
         self.last_positions = inputStates;
-        
-
 
     def reset(self):
         self.last_positions = [0,0,0];
-
 
     def update(self,dL,dR,dTheta):
         for location in self.locations:
@@ -47,7 +45,7 @@ class PosApprox:
             sd.putStringArray('locations/location_names',self.names);
         
         
-
+        
     @classmethod
     def get_location_offsets(cls,dL,dR,dTheta,approxType): #NOTE: dP is (forward,horizontal) NOT (x,y); make sure to orient to robot forward when updating.
         dL = dL*cls.encoder_scale; #delta left encoder
