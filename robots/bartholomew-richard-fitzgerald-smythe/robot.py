@@ -27,7 +27,11 @@ from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
 from components.shooter import Shooter
 from components.serializer import Serializer
+from components.position_approximation import PosApprox
+
 class Robot(magicbot.MagicRobot):
+    location: PosApprox
+
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
