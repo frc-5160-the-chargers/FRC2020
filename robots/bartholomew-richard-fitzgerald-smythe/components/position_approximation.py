@@ -1,6 +1,7 @@
 #FILE IS DOMAIN OF HARRISON
 #DO NOT TOUCH SEMICOLONS
 import math
+from sensors import Encoders,EncoderSide, NavX
 from networktables import NetworkTables
 
 
@@ -13,6 +14,8 @@ class PosApprox:
     ENCODER_RC_GYRO_ARC = 4;
     AVERAGE_ENCODER_AND_GYRO = 5;
 
+    encoders: Encoders;
+    navx: NavX;
 
     ##TODO: put somewhere that makes sense lol
     encoder_scale = 5; #encoder input units -> real world units
@@ -21,6 +24,19 @@ class PosApprox:
     def __init__(self,location_settings,names=None):
         self.locations = [Location(setting) for setting in location_settings]; #TODO: Clean Up
         self.names = names;
+        self.last_positions =[0,0,0]; #left encoder, right encoder, gyro
+
+    def execute(self):
+        inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
+        deltas = [inputStates[i] - self.last_positions[i] for i in range(3)];
+        self.update(*deltas);
+        self.last_positions = inputStates;
+        
+
+
+    def reset(self):
+        self.last_positions = [0,0,0];
+
 
     def update(self,dL,dR,dTheta):
         for location in self.locations:
