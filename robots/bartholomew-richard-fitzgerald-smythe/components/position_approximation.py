@@ -22,7 +22,15 @@ class PosApprox:
     encoder_scale = 5; #encoder input units -> real world units
     WHEEL_DISTANCE = 20; #distance between wheels
 
-    def __init__(self,location_settings,names=None):
+    def __init__(self):
+        location_settings = [[PosApprox.ENCODER_ONLY],
+            [PosApprox.LEFT_ENCODER_AND_GYRO],
+            [PosApprox.RIGHT_ENCODER_AND_GYRO],
+            [PosApprox.LEFT_ENCODER_AND_GYRO,PosApprox.RIGHT_ENCODER_AND_GYRO],
+            [PosApprox.OUTER_ENCODER_AND_GYRO],
+            [PosApprox.ENCODER_RC_GYRO_ARC],
+            [PosApprox.AVERAGE_ENCODER_AND_GYRO]];
+        names=["Encoder only", "Left+Gyro", "Right+Gyro", "Left+Gyro & Right+Gyro Avg", "Outer+Gyro","Encoder RC & Gyro Arc", "Average Encoder & Gyro"]
         self.locations = [Location(setting) for setting in location_settings]; #TODO: Clean Up
         self.names = names;
         self.last_positions =[0,0,0]; #left encoder, right encoder, gyro
@@ -37,10 +45,12 @@ class PosApprox:
         self.last_positions = [0,0,0];
 
     def update(self,dL,dR,dTheta):
-        for location in self.locations:
-            location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types]); #multiple types means average their outputs together
         sd = NetworkTables.getTable('SmartDashboard');
-        sd.putNumberArray('locations/locations',[location.toArray() for location in self.locations]);
+        sd.putNumber('locations/num_locations',len(self.locations));
+        for i in range(len(self.locations)):
+            location = self.locations[i];
+            location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types]); #multiple types means average their outputs together
+            sd.putNumberArray('locations/location-' + str(i),location.toArray());
         if self.names is not None:
             sd.putStringArray('locations/location_names',self.names);
         
