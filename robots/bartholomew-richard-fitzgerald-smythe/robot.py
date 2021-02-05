@@ -114,6 +114,9 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
+        inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
+        print(inputStates);
+        #print("execute method")
         try:
             # drive the drivetrain as needed
             driver_x, driver_y = self.driver.get_curvature_output()
@@ -192,4 +195,4 @@ if __name__ == '__main__':
     git_gud = lambda: wpilib.run(Robot)
     git_gud()
 
-#
+#py robots\bartholomew-richard-fitzgerald-smythe\robot.py deploy --no-version-check --nc

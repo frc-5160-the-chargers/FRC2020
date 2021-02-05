@@ -37,6 +37,9 @@ class PosApprox:
 
     def execute(self):
         inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
+        #print(inputStates);
+        sd = NetworkTables.getTable('SmartDashboard');
+        sd.putNumberArray('locations/states',inputStates)
         deltas = [inputStates[i] - self.last_positions[i] for i in range(3)];
         self.update(*deltas);
         self.last_positions = inputStates;
@@ -45,19 +48,27 @@ class PosApprox:
         self.last_positions = [0,0,0];
 
     def update(self,dL,dR,dTheta):
+        print("updated");
         sd = NetworkTables.getTable('SmartDashboard');
         sd.putNumber('locations/num_locations',len(self.locations));
+        sd.putNumber('locations/dL',dL);
+        sd.putNumber('locations/dR',dR);
+        sd.putNumber('locations/dTheta',dTheta);
         for i in range(len(self.locations)):
             location = self.locations[i];
             location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types]); #multiple types means average their outputs together
+            #print(location);
             sd.putNumberArray('locations/location-' + str(i),location.toArray());
         if self.names is not None:
             sd.putStringArray('locations/location_names',self.names);
+
         
         
         
     @classmethod
     def get_location_offsets(cls,dL,dR,dTheta,approxType): #NOTE: dP is (forward,horizontal) NOT (x,y); make sure to orient to robot forward when updating.
+
+        #print("thing");
         dL = dL*cls.encoder_scale; #delta left encoder
         dR = dL*cls.encoder_scale; #delta right encoder
         if (dL == dR or (dTheta == 0 and approxType != cls.ENCODER_ONLY)):
@@ -105,6 +116,7 @@ class PosApprox:
         dP = (rC * (1-math.cos(dTheta)),rC * math.sin(dTheta)); #change in position
 
         out = (dP,-1*dTheta*(1 if leftOutside else -1));
+        #print(out);
         return out;
 
 class Location:
@@ -113,9 +125,13 @@ class Location:
         self.angle = startAngle;
         self.types = approxTypes;
 
+    def __str__(self):
+        return f"robot location: Pos: {self.pos}, Angle:{self.angle}, Approximation Types: {self.types}";
+
     def updateLocation(self,offsets):
         cumulativeDP = [0,0];
         cumulativeDTheta = 0;
+        #print(offsets);
         for offset in offsets:
             dP = offset[0];
             dTheta = offset[1];
