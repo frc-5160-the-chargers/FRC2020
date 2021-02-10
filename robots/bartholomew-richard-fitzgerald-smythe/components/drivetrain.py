@@ -10,6 +10,7 @@ from components.sensors import NavX, Encoders, EncoderSide
 from pid import SuperPIDController, ff_constant, ff_flywheel, PidManager
 from kinematics import ArcDrive
 
+from components.limelight import Limelight
 class PowertrainMode:
     TANK_DRIVE = 0
     CURVATURE_DRIVE = 1
@@ -79,15 +80,16 @@ class DrivetrainState:
     
     # 10-19 == aided modes
     AIDED_DRIVE_STRAIGHT = 10
-
+    TARGET_AIM = 11
     # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
-
+    
 class Drivetrain:
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
+    limelight : Limelight
 
     def __init__(self):
         self.turn_pid = SuperPIDController(
@@ -123,10 +125,11 @@ class Drivetrain:
 
     def reset_state(self):
         self.state = DrivetrainState.MANUAL_DRIVE
+        self.callback = None
 
     def reset(self):
         self.pid_manager.reset_controllers()
-
+        
         self.powertrain.reset()
         self.encoders.reset()
         self.navx.reset()
@@ -163,13 +166,21 @@ class Drivetrain:
             self.powertrain.mode = PowertrainMode.ARCADE_DRIVE
             self.turn_pid.run_setpoint(0)
         self.powertrain.set_arcade_powers(power=power)
+    
+    def aim_at_target(self):
+        if self.state == DrivetrainState.MANUAL_DRIVE:
+            self.turn_to_angle(self.limelight.get_horizontal_angle_offset, self.start_fire)
 
-    def turn_to_angle(self, angle):
+    def start_fire(self):
+        pass
+
+    def turn_to_angle(self, angle, next = None):
         if self.state != DrivetrainState.PID_TURNING:
             self.pid_manager.stop_controllers()
             self.navx.reset()
             self.state = DrivetrainState.PID_TURNING
             self.turn_pid.run_setpoint(angle)
+            self.callback = next
 
     def drive_to_position(self, position):
         if self.state != DrivetrainState.PID_STRAIGHT:
@@ -186,3 +197,5 @@ class Drivetrain:
 
     def execute(self):
         self.pid_manager.execute_controllers()
+        if self.state == DrivetrainState.PID_TURNING and self.callback is not None and self.turn_pid.get_on_target():
+            self.callback()
