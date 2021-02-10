@@ -11,6 +11,7 @@ from pid import SuperPIDController, ff_constant, ff_flywheel, PidManager
 from kinematics import ArcDrive
 
 from components.limelight import Limelight
+from components.shooter import Shooter
 class PowertrainMode:
     TANK_DRIVE = 0
     CURVATURE_DRIVE = 1
@@ -90,6 +91,7 @@ class Drivetrain:
     encoders: Encoders
     navx: NavX
     limelight : Limelight
+    shooter : Shooter
 
     def __init__(self):
         self.turn_pid = SuperPIDController(
@@ -172,7 +174,7 @@ class Drivetrain:
             self.turn_to_angle(self.limelight.get_horizontal_angle_offset, self.start_fire)
 
     def start_fire(self):
-        pass
+        self.shooter.fire()
 
     def turn_to_angle(self, angle, next = None):
         if self.state != DrivetrainState.PID_TURNING:
