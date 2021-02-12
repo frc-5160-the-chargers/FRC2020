@@ -90,20 +90,6 @@ class RobotMap:
             ramp_rate=.3
         )
 
-    class Climber:
-        motor_port = 8
-
-        max_power = .9
-        
-        motor_config = TalonMotorConfig(
-            voltage_saturation=11,
-            deadband=.05,
-            peak_current=60,
-            continuous_current=39,
-            default_mode=NeutralMode.Brake,
-            ramp_rate=0.25
-        )
-    
     class ColorWheel:
         motor_port = 7
 
@@ -120,6 +106,33 @@ class RobotMap:
         spinning_power_rotation = .7
 
         max_power = .9
+
+    class Climber:
+        motor_port = 8
+
+        max_power = .9
+        
+        motor_config = TalonMotorConfig(
+            voltage_saturation=11,
+            deadband=.05,
+            peak_current=60,
+            continuous_current=39,
+            default_mode=NeutralMode.Brake,
+            ramp_rate=0.25
+        )
+    
+    class Shooter:
+        motor_port = 9
+        max_power = 1
+
+       motor_config = SparkMotorConfig(
+            voltage_compensation=11,
+            stall_current_limit=39,
+            default_mode=IdleMode.kBrake,
+            ramp_rate=1,
+            reverse_motor=True
+        )
+
 
     class Encoders:
         wheel_diameter = 7.4
