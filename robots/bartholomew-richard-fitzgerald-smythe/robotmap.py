@@ -32,6 +32,8 @@ class RobotMap:
             reverse_motor=True
         )
 
+        distance_between_wheels = 22.5
+
         max_motor_power = .4
         max_auto_power = .35
         turbo_mode_power = .57
