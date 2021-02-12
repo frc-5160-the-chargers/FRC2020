@@ -63,8 +63,12 @@ class Sysop:
     def get_intake_outtake(self):
         return self.controller.getAButton()
 
+    def get_target_aim(self)
+        return self.controller.getAButton()
+
     def get_intake_intake(self):
         return self.controller.getBButton()
+
 
     def process_lift_axis(self, i):
         i = math.copysign(deadzone(i, RobotMap.OI.lift_deadband) ** 2, i)

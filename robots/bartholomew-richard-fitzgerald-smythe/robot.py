@@ -17,17 +17,22 @@ from oi import Driver, Sysop
 from utils import config_spark, config_talon
 from robotmap import RobotMap
 from dash import Tunable
+from components.limelight import Limelight
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
 from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFortuneColor
 from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
+from components.shooter import Shooter
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
     drivetrain: Drivetrain
+
+    limelight : Limelight
+    shooter : Shooter
 
     color_sensor: WheelOfFortuneSensor
     fortune_controller: ColorWheelController
@@ -90,6 +95,10 @@ class Robot(magicbot.MagicRobot):
         self.color_wheel_motor = WPI_TalonSRX(RobotMap.ColorWheel.motor_port)
         config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
 
+        # shooter
+        self.shooter_neo_motor = CANSparkMax(RobotMap.Shooter.motor_port)
+        config_spark(self.shooter_neo_motor, RobotMap.Shooter.motor_config) 
+
         self.i2c_color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
         # controllers and electrical stuff
@@ -99,9 +108,11 @@ class Robot(magicbot.MagicRobot):
         # camera server
         wpilib.CameraServer.launch()
 
+
     def reset_subsystems(self):
         self.drivetrain.reset()
         self.climber.reset()
+        self.limelight.reset()
 
     def teleopInit(self):
         self.reset_subsystems()
@@ -113,6 +124,7 @@ class Robot(magicbot.MagicRobot):
             # manually handled driving
             if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
                 self.drivetrain.curvature_drive(driver_y, driver_x)
+                
 
             # set turbo mode
             self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
@@ -148,6 +160,12 @@ class Robot(magicbot.MagicRobot):
                 self.intake_roller.stop()
         except:
             print("INTAKE ROLLER ERROR")
+
+        try:
+            if self.sysop.get_target_aim():
+                self.drivetrain.aim_at_target()
+        except:
+            print("AUTO AIM ERROR")
 
         try:
             self.climber.set_power(self.sysop.get_climb_axis())
