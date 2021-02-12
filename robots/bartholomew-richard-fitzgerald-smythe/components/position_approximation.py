@@ -1,6 +1,7 @@
 #FILE IS DOMAIN OF HARRISON
 #DO NOT TOUCH SEMICOLONS
 import math
+from robotmap import RobotMap
 from components.sensors import Encoders,EncoderSide, NavX
 from networktables import NetworkTables
 from wpilib import SmartDashboard
@@ -19,8 +20,7 @@ class PosApprox:
     navx: NavX;
 
     ##TODO: put somewhere that makes sense lol
-    encoder_scale = 5; #encoder input units -> real world units
-    WHEEL_DISTANCE = 20; #distance between wheels
+    
 
     def __init__(self):
         location_settings = [[PosApprox.ENCODER_ONLY],
@@ -67,10 +67,10 @@ class PosApprox:
         
     @classmethod
     def get_location_offsets(cls,dL,dR,dTheta,approxType): #NOTE: dP is (forward,horizontal) NOT (x,y); make sure to orient to robot forward when updating.
-
+        WHEEL_DISTANCE = RobotMap.Drivetrain.distance_between_wheels;
         #print("thing");
-        dL = dL*cls.encoder_scale; #delta left encoder
-        dR = dL*cls.encoder_scale; #delta right encoder
+        dL = dL*RobotMap.Encoders.distance_per_pulse; #delta left encoder
+        dR = dL*RobotMap.Encoders.distance_per_pulse; #delta right encoder
         if (dL == dR or (dTheta == 0 and approxType != cls.ENCODER_ONLY)):
             out = ((0,(dL + dR)/2),0);
             return out;
@@ -88,26 +88,26 @@ class PosApprox:
 
         elif (approxType == cls.ENCODER_ONLY):
             #rC: central radius - radius of the circle halfway between wheels
-            rC = cls.WHEEL_DISTANCE/2*(dR + dL) / (dL - dR) *  outsideCoeff;
+            rC = WHEEL_DISTANCE/2*(dR + dL) / (dL - dR) *  outsideCoeff;
             print("encoder RC: ", rC);
 
             #known arclength, R, over known radius of R, which is shifted from center by a certain amount
             if (dL == 0):
-                dTheta = dR/(rC -  outsideCoeff*cls.WHEEL_DISTANCE/2);
+                dTheta = dR/(rC -  outsideCoeff*WHEEL_DISTANCE/2);
             else:
-                dTheta = dL/(rC +  outsideCoeff*cls.WHEEL_DISTANCE/2);
+                dTheta = dL/(rC +  outsideCoeff*WHEEL_DISTANCE/2);
         elif (approxType == cls.OUTER_ENCODER_AND_GYRO):
             outsideArc = dL if leftOutside else dR;
-            rC = -outsideCoeff*cls.WHEEL_DISTANCE/2 + outsideCoeff*outsideArc/dTheta;
+            rC = -outsideCoeff*WHEEL_DISTANCE/2 + outsideCoeff*outsideArc/dTheta;
 
         elif (approxType == cls.LEFT_ENCODER_AND_GYRO):
-            rC = -outsideCoeff*cls.WHEEL_DISTANCE/2 + dL/dTheta;
+            rC = -outsideCoeff*WHEEL_DISTANCE/2 + dL/dTheta;
 
         elif (approxType == cls.RIGHT_ENCODER_AND_GYRO):
-            rC = -outsideCoeff*cls.WHEEL_DISTANCE/2 + dR/dTheta;
+            rC = -outsideCoeff*WHEEL_DISTANCE/2 + dR/dTheta;
 
         elif (approxType == cls.ENCODER_RC_GYRO_ARC):
-            rC = cls.WHEEL_DISTANCE/2*(dR + dL) / (dL - dR) * outsideCoeff;
+            rC = WHEEL_DISTANCE/2*(dR + dL) / (dL - dR) * outsideCoeff;
 
         elif (approxType == cls.AVERAGE_ENCODER_AND_GYRO):
             rC = outsideCoeff*(dR + dL)/(2 * dTheta);

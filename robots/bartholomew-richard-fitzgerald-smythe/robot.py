@@ -128,14 +128,14 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
 
             # # check and see if we need to activate driver assists
-            # if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
-            #     self.drivetrain.drive_straight(driver_y)
-            # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
-            #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+            if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
+                self.drivetrain.drive_straight(driver_y)
+            elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
+                self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
 
-            # # revert to manual control if enabled
-            # if self.driver.get_manual_control_override():
-            #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+            # revert to manual control if enabled
+            if self.driver.get_manual_control_override():
+                self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
         except:
             print("DRIVETRAIN ERROR")
 
