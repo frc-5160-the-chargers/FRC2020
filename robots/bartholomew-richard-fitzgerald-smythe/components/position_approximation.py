@@ -35,6 +35,7 @@ class PosApprox:
         self.locations = [Location(setting) for setting in location_settings]; #TODO: Clean Up
         self.names = names;
         self.last_positions =[0,0,0]; #left encoder, right encoder, gyro
+        self.offsets = [[0,0,0] for location in self.locations];
 
     def execute(self):
         inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
@@ -50,6 +51,8 @@ class PosApprox:
         for location in self.locations:
             location.reset();
 
+    def get_offsets(self): #master offsets
+        return self.offsets[self.master_location];
     def get_location(self):
         return self.locations[self.master_location];
 
@@ -62,7 +65,8 @@ class PosApprox:
         sd.putNumber('locations/dTheta',dTheta);
         for i in range(len(self.locations)):
             location = self.locations[i];
-            location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types]); #multiple types means average their outputs together
+            self.offsets[i] = [PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types];
+            location.updateLocation(self.offsets[i]); #multiple types means average their outputs together
             #print(location);
             sd.putNumberArray('locations/location-' + str(i),location.toArray());
         sd.putNumberArray('locations/master_location',self.get_location().toArray())
