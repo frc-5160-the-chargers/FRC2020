@@ -65,6 +65,7 @@ class PosApprox:
             location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types]); #multiple types means average their outputs together
             #print(location);
             sd.putNumberArray('locations/location-' + str(i),location.toArray());
+        sd.putNumberArray('locations/master_location',self.get_location().toArray())
         if self.names is not None:
             sd.putStringArray('locations/location_names',self.names);
 
