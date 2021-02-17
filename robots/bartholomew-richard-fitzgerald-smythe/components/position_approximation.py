@@ -30,6 +30,7 @@ class PosApprox:
             [PosApprox.OUTER_ENCODER_AND_GYRO],
             [PosApprox.ENCODER_RC_GYRO_ARC],
             [PosApprox.AVERAGE_ENCODER_AND_GYRO]];
+        self.master_location = 4; #seems to be the best
         names=["Encoder only", "Left+Gyro", "Right+Gyro", "Left+Gyro & Right+Gyro Avg", "Outer+Gyro","Encoder RC & Gyro Arc", "Average Encoder & Gyro"]
         self.locations = [Location(setting) for setting in location_settings]; #TODO: Clean Up
         self.names = names;
@@ -48,6 +49,9 @@ class PosApprox:
         self.last_positions = [0,0,0];
         for location in self.locations:
             location.reset();
+
+    def get_location(self):
+        return self.locations[self.master_location];
 
     def update(self,dL,dR,dTheta):
         print("updated");

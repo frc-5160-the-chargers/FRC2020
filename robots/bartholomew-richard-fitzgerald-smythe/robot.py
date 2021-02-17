@@ -64,7 +64,7 @@ class Robot(magicbot.MagicRobot):
         self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_b, RobotMap.Encoders.left_encoder_a)
 
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_b, RobotMap.Encoders.right_encoder_a)
-        self.right_encoder.setReverseDirection(True)
+        self.right_encoder.setReverseDirection(False)
         
         self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
         self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
@@ -128,10 +128,10 @@ class Robot(magicbot.MagicRobot):
             self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
 
             # # check and see if we need to activate driver assists
-            if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
-                self.drivetrain.drive_straight(driver_y)
-            elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
-                self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+            # if self.drivetrain.ready_straight_assist() and self.driver.ready_straight_assist():
+            #     self.drivetrain.drive_straight(driver_y)
+            # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
+            #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
 
             # revert to manual control if enabled
             if self.driver.get_manual_control_override():
