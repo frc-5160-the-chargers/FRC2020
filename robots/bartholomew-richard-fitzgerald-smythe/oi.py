@@ -63,8 +63,11 @@ class Sysop:
     def get_intake_outtake(self):
         return self.controller.getAButton()
 
-    def get_target_aim(self)
-        return self.controller.getAButton()
+    def get_target_aim(self):
+        return self.controller.getXButton()
+    
+    def get_shooter_stop(self):
+        return self.controller.getYButton()
 
     def get_intake_intake(self):
         return self.controller.getBButton()

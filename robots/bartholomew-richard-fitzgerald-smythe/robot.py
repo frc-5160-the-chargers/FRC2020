@@ -25,6 +25,7 @@ from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
 from components.shooter import Shooter
+from components.serializer import Serializer
 class Robot(magicbot.MagicRobot):
     powertrain: Powertrain
     encoders: Encoders
@@ -42,6 +43,8 @@ class Robot(magicbot.MagicRobot):
     intake: Intake
 
     climber: Climber
+    
+    serializer : Serializer
 
     def createObjects(self):
         # initialize physical objects
@@ -98,6 +101,8 @@ class Robot(magicbot.MagicRobot):
         # shooter
         self.shooter_neo_motor = CANSparkMax(RobotMap.Shooter.motor_port)
         config_spark(self.shooter_neo_motor, RobotMap.Shooter.motor_config) 
+    
+        
 
         self.i2c_color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
@@ -164,6 +169,8 @@ class Robot(magicbot.MagicRobot):
         try:
             if self.sysop.get_target_aim():
                 self.drivetrain.aim_at_target()
+            elif self.sysop.get_shooter_stop():
+                self.shooter.stop_fire()
         except:
             print("AUTO AIM ERROR")
 
