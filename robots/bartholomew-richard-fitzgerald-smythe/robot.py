@@ -13,6 +13,7 @@ from ctre import WPI_TalonSRX
 
 import navx
 
+from networktables import NetworkTables
 from oi import Driver, Sysop
 from utils import config_spark, config_talon
 from robotmap import RobotMap
@@ -23,7 +24,10 @@ from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFort
 from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
+from components.position_approximation import PosApprox
 class Robot(magicbot.MagicRobot):
+    location: PosApprox
+
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
@@ -59,9 +63,8 @@ class Robot(magicbot.MagicRobot):
 
         self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_b, RobotMap.Encoders.left_encoder_a)
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_b, RobotMap.Encoders.right_encoder_a)
-        
-        self.right_encoder.setReverseDirection(True)
-        
+        self.right_encoder.setReverseDirection(False)
+
         self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
         self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
 
@@ -96,8 +99,11 @@ class Robot(magicbot.MagicRobot):
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
 
+        NetworkTables.initialize(server="roborio");
         # camera server
         wpilib.CameraServer.launch()
+
+
 
     def reset_subsystems(self):
         self.drivetrain.reset()
@@ -107,6 +113,9 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
+        inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
+        print(inputStates);
+        #print("execute method")
         try:
             # drive the drivetrain as needed
             driver_x, driver_y = self.driver.get_curvature_output()
@@ -125,9 +134,9 @@ class Robot(magicbot.MagicRobot):
             # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
             #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
 
-            # # revert to manual control if enabled
-            # if self.driver.get_manual_control_override():
-            #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+            # revert to manual control if enabled
+            if self.driver.get_manual_control_override():
+                self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
         except:
             print("DRIVETRAIN ERROR")
 
@@ -186,3 +195,5 @@ class Robot(magicbot.MagicRobot):
 if __name__ == '__main__':
     git_gud = lambda: wpilib.run(Robot)
     git_gud()
+
+#py robots\bartholomew-richard-fitzgerald-smythe\robot.py deploy --no-version-check --nc

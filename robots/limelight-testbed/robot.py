@@ -113,3 +113,5 @@ class Robot(magicbot.MagicRobot):
 
 if __name__ == '__main__':
     wpilib.run(Robot)
+
+    #py robots\bartholomew-richard-fitzgerald-smythe\robot.py deploy --no-version-check --nc

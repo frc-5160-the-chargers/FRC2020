@@ -5,6 +5,7 @@ from wpilib import SpeedControllerGroup
 
 from robotmap import RobotMap
 
+from components.position_approximation import PosApprox
 from components.sensors import NavX, Encoders, EncoderSide
 
 from pid import SuperPIDController, ff_constant, ff_flywheel, PidManager
@@ -16,6 +17,8 @@ class PowertrainMode:
     ARCADE_DRIVE = 2
 
 class Powertrain:
+
+
     left_motors: SpeedControllerGroup
     right_motors: SpeedControllerGroup
 
@@ -85,6 +88,7 @@ class DrivetrainState:
     PID_STRAIGHT = 21
 
 class Drivetrain:
+    location: PosApprox
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
@@ -119,6 +123,9 @@ class Drivetrain:
             self.position_pid,
         ])
 
+        
+
+
         self.reset_state()
 
     def reset_state(self):
@@ -132,6 +139,7 @@ class Drivetrain:
         self.navx.reset()
 
         self.reset_state()
+
 
     def get_heading(self):
         return self.navx.get_heading()
