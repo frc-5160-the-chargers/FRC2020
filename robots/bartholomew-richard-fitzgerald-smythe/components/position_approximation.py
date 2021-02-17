@@ -133,6 +133,8 @@ class Location:
         self.angle = startAngle;
         self.startAngle = startAngle;
         self.types = approxTypes;
+        self.lastDP = [0,0];
+        self.lastDTheta = 0;
 
     def reset(self,startPos=None,startAngle=None):
         self.pos = startPos if startPos is not None else self.startPos.copy();
@@ -156,6 +158,9 @@ class Location:
         cumulativeDP[0] /= len(offsets);
         cumulativeDP[1] /= len(offsets);
         dTheta /= len(offsets);
+
+        self.lastDP = cumulativeDP;
+        self.lastDTheta = cumulativeDTheta;
 
         self.pos[0] += cumulativeDP[0]; self.pos[1] += cumulativeDP[1]; self.angle += cumulativeDTheta;
 
