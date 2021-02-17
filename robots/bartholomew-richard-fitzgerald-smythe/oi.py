@@ -9,6 +9,7 @@ from utils import map_value
 def deadzone(i, dz):
     return 0 if abs(i) <= dz else i
 
+#Controller 1 - person who drives
 class Driver:
     def __init__(self, controller: XboxController):
         self.controller = controller
@@ -56,6 +57,7 @@ class Driver:
         x = map_value(modifier, 0, 1, RobotMap.Drivetrain.max_motor_power, RobotMap.Drivetrain.turbo_mode_power)
         return x
 
+#Controller 2 - person who controls the systems
 class Sysop:
     def __init__(self, controller: XboxController):
         self.controller = controller

@@ -62,10 +62,9 @@ class Robot(magicbot.MagicRobot):
         self.differential_drive.setMaxOutput(RobotMap.Drivetrain.max_motor_power)
 
         self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_b, RobotMap.Encoders.left_encoder_a)
-
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_b, RobotMap.Encoders.right_encoder_a)
         self.right_encoder.setReverseDirection(False)
-        
+
         self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
         self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
 
@@ -123,6 +122,8 @@ class Robot(magicbot.MagicRobot):
             # manually handled driving
             if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
                 self.drivetrain.curvature_drive(driver_y, driver_x)
+            elif self.drivetrain.state == DrivetrainState.AIM_TO_TARGET:
+                self.drivetrain.aim_to_target();
 
             # set turbo mode
             self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
