@@ -1,19 +1,17 @@
-from networktables.networktable import NetworkTable
+from networktables import NetworkTable
 
 import math
-import json
 
-from config import load_config_file
+from robotmap import RobotMap
 
-config_data = load_config_file()
 
 class Limelight:
     limelight_table: NetworkTable
 
     def __init__(self):
         self.reset()
-        self.mounting_angle = config_data['limelight']['mount_angle']
-        self.mounting_height = config_data['limelight']['mount_height']
+        self.mounting_angle = RobotMap.Limelight.mount_angle
+        self.mounting_height = RobotMap.Limelight.mount_height
 
     def get_horizontal_angle_offset(self):
         '''return the angle needed to turn to make the target in the center of view'''

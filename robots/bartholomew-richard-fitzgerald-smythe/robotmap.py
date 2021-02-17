@@ -155,3 +155,14 @@ class RobotMap:
 
         right_encoder_a = 2
         right_encoder_b = 3
+
+    class Limelight:
+        mount_height = 0.95  # meters
+        mount_angle = 33.6  # degrees
+
+        target_height = 2.3  # meters
+
+        enabled_devices = [
+            "shooter",
+            "camera"
+        ]
