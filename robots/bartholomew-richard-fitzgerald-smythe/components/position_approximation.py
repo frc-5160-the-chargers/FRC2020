@@ -4,7 +4,7 @@ import math
 from robotmap import RobotMap
 from components.sensors import Encoders,EncoderSide, NavX
 from networktables import NetworkTables
-from wpilib import SmartDashboard
+#from wpilib import SmartDashboard
 
 
 class PosApprox:
@@ -23,16 +23,16 @@ class PosApprox:
     
 
     def __init__(self):
+        self.frame = None;
         location_settings = [[PosApprox.ENCODER_ONLY],
             [PosApprox.LEFT_ENCODER_AND_GYRO],
             [PosApprox.RIGHT_ENCODER_AND_GYRO],
             [PosApprox.LEFT_ENCODER_AND_GYRO,PosApprox.RIGHT_ENCODER_AND_GYRO],
             [PosApprox.OUTER_ENCODER_AND_GYRO],
             [PosApprox.ENCODER_RC_GYRO_ARC],
-            [PosApprox.AVERAGE_ENCODER_AND_GYRO]];
-        names=["Encoder only", "Left+Gyro", "Right+Gyro", "Left+Gyro & Right+Gyro Avg", "Outer+Gyro","Encoder RC & Gyro Arc", "Average Encoder & Gyro"]
-        self.locations = [Location(setting) for setting in location_settings]; #TODO: Clean Up
-        self.names = names;
+            [PosApprox.AVERAGE_ENCODER_AND_GYRO]]; 
+        self.setting = PosApprox.ENCODER_RC_GYRO_ARC;
+        self.location = Location(self.setting);
         self.last_positions =[0,0,0]; #left encoder, right encoder, gyro
 
     def execute(self):
@@ -44,8 +44,14 @@ class PosApprox:
         self.update(*deltas);
         self.last_positions = inputStates;
 
+    def get_location(self):
+        return self.location;
+
     def reset(self):
         self.last_positions = [0,0,0];
+
+    def reset_location(self): #unsure whether to call from reset
+        self.location.reset();
 
     def update(self,dL,dR,dTheta):
         print("updated");
@@ -54,11 +60,8 @@ class PosApprox:
         sd.putNumber('locations/dL',dL);
         sd.putNumber('locations/dR',dR);
         sd.putNumber('locations/dTheta',dTheta);
-        for i in range(len(self.locations)):
-            location = self.locations[i];
-            location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in location.types]); #multiple types means average their outputs together
-            #print(location);
-            sd.putNumberArray('locations/location-' + str(i),location.toArray());
+        self.location.updateLocation([PosApprox.get_location_offsets(dL,dR,dTheta,type) for type in self.location.types]); #multiple types means average their outputs together
+        #print(location);
         if self.names is not None:
             sd.putStringArray('locations/location_names',self.names);
 
@@ -122,8 +125,14 @@ class PosApprox:
 class Location:
     def __init__(self,approxTypes,startPos=[0,0],startAngle=0):
         self.pos = startPos;
+        self.startPos = startPos.copy();
         self.angle = startAngle;
+        self.startAngle = startAngle;
         self.types = approxTypes;
+
+    def reset(self,startPos=self.startPos.copy(),startAngle=self.startAngle):
+        self.pos = startPos;
+        self.angle = startAngle;
 
     def __str__(self):
         return f"robot location: Pos: {self.pos}, Angle:{self.angle}, Approximation Types: {self.types}";
