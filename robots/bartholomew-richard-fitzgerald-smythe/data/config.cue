@@ -10,6 +10,5 @@ limelight: {
 // enabled devices
 enabled_devices: [
     "shooter",
-    "neo",
     "camera"
 ]
