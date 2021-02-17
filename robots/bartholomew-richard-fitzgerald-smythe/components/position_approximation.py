@@ -46,6 +46,8 @@ class PosApprox:
 
     def reset(self):
         self.last_positions = [0,0,0];
+        for location in self.locations:
+            location.reset();
 
     def update(self,dL,dR,dTheta):
         print("updated");
@@ -88,7 +90,7 @@ class PosApprox:
 
         elif (approxType == cls.ENCODER_ONLY):
             #rC: central radius - radius of the circle halfway between wheels
-            rC = WHEEL_DISTANCE/2*(dR + dL) / (dL - dR) *  outsideCoeff;
+            rC = WHEEL_DISTANCE/2 * (dR + dL) / (dL - dR) *  outsideCoeff;
             print("encoder RC: ", rC);
 
             #known arclength, R, over known radius of R, which is shifted from center by a certain amount
@@ -122,11 +124,19 @@ class PosApprox:
 class Location:
     def __init__(self,approxTypes,startPos=[0,0],startAngle=0):
         self.pos = startPos;
+        self.startPos = startPos.copy();
         self.angle = startAngle;
+        self.startAngle = startAngle;
         self.types = approxTypes;
+
+    def reset(self,startPos=None,startAngle=None):
+        self.pos = startPos if startPos is not None else self.startPos.copy();
+        self.angle = startAngle if startAngle is not None else self.startAngle.copy();
 
     def __str__(self):
         return f"robot location: Pos: {self.pos}, Angle:{self.angle}, Approximation Types: {self.types}";
+
+    
 
     def updateLocation(self,offsets):
         cumulativeDP = [0,0];
