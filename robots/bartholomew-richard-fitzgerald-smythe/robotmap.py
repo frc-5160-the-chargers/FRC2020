@@ -65,7 +65,7 @@ class RobotMap:
             reverse_motor=True
         )
 
-        encoder_distance_per_pulse = 360/4096 * (24/60)
+        encoder_distance_per_pulse = 360/4096 * (24/60) #in inches
         encoder_averaging = 5
 
         pid_values = PIDValue(0.04, 0, 0.005)
