@@ -76,7 +76,7 @@ class Sysop:
     def get_change_shooter_power(self):
         if self.controller.getStickButton(XboxController.Hand.kLeftHand):
             return self.controller.getX(XboxController.Hand.kLeftHand)
-        elif
+        elif:
             return 0
 
     def process_lift_axis(self, i):
