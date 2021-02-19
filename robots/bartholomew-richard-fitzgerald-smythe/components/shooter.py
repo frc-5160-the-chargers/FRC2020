@@ -3,11 +3,13 @@ from magicbot import tunable
 from components.limelight import Limelight
 from components.sensors import WheelOfFortuneSensor
 from components.serializer import Serializer
+from components.drivetrain import Drivetrain
 class Shooter:
     neo_motor: CANSparkMax
     color_sensro : WheelOfFortuneSensor
     serializer : Serializer
     limelight : Limelight
+    drivetrain : Drivetrain
 
     def __init__(self):
         self.power = 0
@@ -37,13 +39,13 @@ class Shooter:
         self.power = 0
     
     def distance_rpm_calculator(self):
-        rpm = self.limelight.get_distance_trig() * 10
+        rpm = self.limelight.get_distance_trig() * 500
         return rpm
 
     def fire(self):
         if(self.state == ShooterState.SHOOTER_OFF):
             self.state = ShooterState.SHOOTER_ON
-            self.serializer.turn_on
+            self.serializer.turn_on()
             self.set_rpm(self.distance_rpm_calculator())
 
     def stop_fire(self):
@@ -51,6 +53,11 @@ class Shooter:
             self.state = ShooterState.SHOOTER_OFF
             self.serializer.turn_off
             self.set_rpm(0)
+            self.drivetrain.reset_state()
+
+    def adjust_rpm(self, direction):
+        self.set_rpm(self.target_rpm + (10*direction))
+
 
     def execute(self):
         self.update_motor_velocity()

@@ -81,7 +81,7 @@ class DrivetrainState:
     
     # 10-19 == aided modes
     AIDED_DRIVE_STRAIGHT = 10
-    TARGET_AIM = 11
+    STOPPPED = 11
     # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
@@ -175,6 +175,7 @@ class Drivetrain:
 
     def start_fire(self):
         self.shooter.fire()
+        self.state = DrivetrainState.STOPPPED
 
     def turn_to_angle(self, angle, next = None):
         if self.state != DrivetrainState.PID_TURNING:
