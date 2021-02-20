@@ -88,6 +88,8 @@ class DrivetrainState:
     # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
+    PID_LIMELIGHT_TURNING = 22;
+    PID_LIMELIGHT_DRIVE = 23;
     
 class Drivetrain:
     location: PosApprox
@@ -122,9 +124,34 @@ class Drivetrain:
             tolerance=0.5
         )
 
+        self.limelight_turn_pid = SuperPIDController(
+            pid_values = RobotMap.Drivetrain.limelight_turn_pid,
+            f_in=lambda: self.limelight.get_horizontal_angle_offset(),
+            f_out=lambda x: self.powertrain.set_arcade_powers(rotation=x),
+            f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_turn,target,error),
+            pid_key=RobotMap.Drivetrain.limelight_turn_pid_key           
+        )
+        self.limelight_turn_pid.configure_controller(
+            output_range=(-RobotMap.Drivetrain.max_auto_power, RobotMap.Drivetrain.max_auto_power),
+            tolerance=0.5 #tune
+        )
+
+        self.limelight_distance_pid = SuperPIDController(
+            pid_values = RobotMap.Drivetrain.limelight_distance_pid,
+            f_in=lambda: self.limelight.get_distance_trig(),
+            f_out=lambda x: self.powertrain.set_arcade_powers(power=x),
+            f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_straight, target, error),
+            pid_key=RobotMap.Drivetrain.limelight_distance_pid_key
+        )
+        self.limelight_distance_pid.configure_controller(
+            output_range=(-RobotMap.Drivetrain.max_auto_power, RobotMap.Drivetrain.max_auto_power),
+            tolerance=1 #tune
+        )
+
         self.pid_manager = PidManager([
             self.turn_pid,
             self.position_pid,
+            self.limelight_turn_pid,
         ])
 
         
@@ -171,10 +198,9 @@ class Drivetrain:
     def drive_straight(self, power):
         if self.state != DrivetrainState.AIDED_DRIVE_STRAIGHT:
             self.pid_manager.stop_controllers()
-            self.navx.reset()
             self.state = DrivetrainState.AIDED_DRIVE_STRAIGHT
             self.powertrain.mode = PowertrainMode.ARCADE_DRIVE
-            self.turn_pid.run_setpoint(0)
+            self.turn_pid.run_setpoint(self.navx.get_heading())
         self.powertrain.set_arcade_powers(power=power)
     
     def aim_at_target(self):
@@ -184,20 +210,33 @@ class Drivetrain:
     def start_fire(self):
         self.shooter.fire()
 
+    def turn_to_limelight_target(self,next = None):
+        if self.state != DrivetrainState.PID_LIMELIGHT_TURNING:
+            self.pid_manager.stop_controllers();
+            self.state = DrivetrainState.PID_LIMELIGHT_TURNING;
+            self.limelight_turn_pid.run_setpoint(0);
+            self.callback = next;
+
+
     def turn_to_angle(self, angle, next = None):
         if self.state != DrivetrainState.PID_TURNING:
             self.pid_manager.stop_controllers()
-            self.navx.reset()
             self.state = DrivetrainState.PID_TURNING
-            self.turn_pid.run_setpoint(angle)
+            self.turn_pid.run_setpoint(angle + self.navx.get_heading())
             self.callback = next
 
     def drive_to_position(self, position):
         if self.state != DrivetrainState.PID_STRAIGHT:
             self.pid_manager.stop_controllers()
-            self.encoders.reset()
             self.state = DrivetrainState.PID_STRAIGHT
-            self.position_pid.run_setpoint(position)
+            self.position_pid.run_setpoint(position + self.encoders.get_position(EncoderSide.BOTH));
+
+    def drive_to_limelight_target(self,distance):
+        if self.state != DrivetrainState.PID_LIMELIGHT_DRIVE:
+            self.pid_manager.stop_controllers();
+            self.state = DrivetrainState.PID_LIMELIGHT_DRIVE;
+            self.limelight_turn_pid.run_setpoint(0);
+            self.limelight_distance_pid.run_setpoint(distance);
 
     def set_power_scaling(self, new_power_scaling):
         self.powertrain.differential_drive.setMaxOutput(new_power_scaling)
@@ -207,5 +246,7 @@ class Drivetrain:
 
     def execute(self):
         self.pid_manager.execute_controllers()
-        if self.state == DrivetrainState.PID_TURNING and self.callback is not None and self.turn_pid.get_on_target():
-            self.callback()
+        if ((self.state == DrivetrainState.PID_TURNING and self.turn_pid.get_on_target())
+            or (self.state == DrivetrainState.PID_LIMELIGHT_TURNING and self.limelight_turn_pid.get_on_target())):
+            if self.callback is not None:
+                self.callback();

@@ -4,6 +4,11 @@ import math
 
 from robotmap import RobotMap
 
+class LED_MODE:
+    DEFAULT = 0;
+    OFF = 1;
+    BLINK = 2;
+    ON = 3;
 
 class Limelight:
     limelight_table: NetworkTable
@@ -35,6 +40,12 @@ class Limelight:
             return height_difference/tan_angle
         else:
             return 0
+
+    def switch_pipeline(self,pipeline):
+        self.limelight_table.putNumber('pipeline',pipeline);
+
+    def switch_led_mode(self,mode):
+        self.limelight_table.putNumber('ledMode',mode);
     
     def reset(self):
         self.valid_target = False

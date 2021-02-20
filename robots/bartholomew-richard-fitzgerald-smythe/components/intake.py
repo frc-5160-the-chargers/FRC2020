@@ -54,7 +54,7 @@ class IntakeLift:
         # return self.intake_lift_encoder.getDistance()
         return self.intake_lift_motor.getSelectedSensorPosition() * RobotMap.IntakeLift.encoder_distance_per_pulse
 
-    def get_feedforwards(self, target, error):
+    def get_feedforwards(self, target, error): #maybe add an actual feedforward to handle loads?
         return 0
 
     def raise_lift(self, power):
