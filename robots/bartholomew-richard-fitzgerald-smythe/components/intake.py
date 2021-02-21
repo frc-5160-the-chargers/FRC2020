@@ -83,6 +83,9 @@ class IntakeLift:
         self.pid_controller.stop()
         self.state = IntakeLiftState.STOPPED
         self.power = 0
+
+    def get_ready(self): #maybe rename to get_on_target?
+        return self.pid_controller.get_on_target();
     
     def set_position_pid(self, position):
         if self.state != IntakeLiftState.PID_CONTROLLED:
