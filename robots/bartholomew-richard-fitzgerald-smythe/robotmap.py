@@ -38,6 +38,7 @@ class RobotMap:
         max_auto_power = .35
         turbo_mode_power = .57
 
+        #kF = feedforward constants - base loads that need to be provided when on target (estimation). kF_straightz
         kF_straight = .15
         kF_turn = .3
 
@@ -47,6 +48,13 @@ class RobotMap:
 
         position_pid = PIDValue(-0.035, 0, -0.001)
         position_pid_key = "Drivetrian Position PID"
+
+        #TODO: DEFINETELY retune IMMEDIATELY
+        limelight_turn_pid = PIDValue(-0.0003, 0, -0.001)
+        limelight_turn_pid_key = "Drivetrain Limelight Turning PID"
+
+        limelight_distance_pid = PIDValue(-0.035, 0, -0.001)
+        limelight_distance_pid_key = "Drivetrain Limelight Distance Driving PID"
     
     class IntakeLift:
         motor_port = 5
