@@ -93,6 +93,8 @@ class Robot(magicbot.MagicRobot):
         self.color_wheel_motor = WPI_TalonSRX(RobotMap.ColorWheel.motor_port)
         config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
 
+        
+
         self.i2c_color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
 
         # controllers and electrical stuff
@@ -113,8 +115,7 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
-        print(inputStates);
+        print(self.color_wheel_motor.Get_Encoder().Get_Velocity());
         #print("execute method")
         try:
             # drive the drivetrain as needed
