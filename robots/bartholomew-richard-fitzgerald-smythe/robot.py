@@ -127,8 +127,8 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        inputStates = [self.encoders.get_position(EncoderSide.LEFT),self.encoders.get_position(EncoderSide.RIGHT),self.navx.get_heading()];
-        print(inputStates);
+        print(self.limelight.get)
+
         #print("execute method")
         try:
             # drive the drivetrain as needed

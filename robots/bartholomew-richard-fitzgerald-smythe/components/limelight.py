@@ -53,6 +53,12 @@ class Limelight:
         self.vertical_offset = 0
         self.target_area = 0
 
+    def get_tx(self):
+        return self.limelight_table.getNumber('tx');
+
+    def get_ty(self):
+        return self.limelight_table.getNumber('ty');
+
     def execute(self):
         targets = self.limelight_table.getNumber('tv', None)
         self.valid_target = targets >= 1.0 if targets != None else False
