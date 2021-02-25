@@ -115,7 +115,7 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        print(self.color_wheel_motor.Get_Encoder().Get_Velocity());
+        #print(self.color_wheel_motor.__dir__());
         #print("execute method")
         try:
             # drive the drivetrain as needed
