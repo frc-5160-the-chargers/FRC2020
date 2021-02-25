@@ -45,7 +45,6 @@ class Shooter:
     def fire(self):
         if(self.state == ShooterState.SHOOTER_OFF):
             self.state = ShooterState.SHOOTER_ON
-            self.serializer.turn_on()
             self.set_rpm(self.distance_rpm_calculator())
 
     def stop_fire(self):
@@ -55,15 +54,12 @@ class Shooter:
             self.set_rpm(0)
             self.drivetrain.reset_state()
 
-    def adjust_rpm(self, direction):
-        self.set_rpm(self.target_rpm + (10*direction))
-
-
     def execute(self):
         self.update_motor_velocity()
 
         self.neo_motor.set(self.power)
-        
+        if(self.target_rpm > 0 and abs(target_rpm-self.neo_motor.getEncoder().getVelocity()<100))
+            self.serializer.turn_on()
 
 
 class ShooterState:
