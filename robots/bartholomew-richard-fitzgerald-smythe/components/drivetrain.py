@@ -173,11 +173,11 @@ class Drivetrain:
         self.powertrain.set_arcade_powers(power=power)
 
     def turn_to_angle(self, angle):
-        if self.state != DrivetrainState.PID_TURNING:
-            self.pid_manager.stop_controllers()
+        #if self.state != DrivetrainState.PID_TURNING:
+        self.pid_manager.stop_controllers()
             #self.navx.reset()
-            self.state = DrivetrainState.PID_TURNING
-            self.turn_pid.run_setpoint(angle)
+            #self.state = DrivetrainState.PID_TURNING
+        self.turn_pid.run_setpoint(angle)
 
     def drive_to_position(self, position):
         if self.state != DrivetrainState.PID_STRAIGHT:
