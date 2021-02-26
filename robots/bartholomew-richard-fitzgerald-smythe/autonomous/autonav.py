@@ -56,7 +56,7 @@ class Autonav(AutonomousStateMachine):
     @state()
     def track(self):
         index = 0
-        self.drivetrain.drive_straight(0.1)
+        self.drivetrain.powertrain.set_arcade_powers(power=0.1)
         while index < len(self.angles):
             self.drivetrain.turn_to_angle(self.angles[index])
             if self.drivetrain.get_position() > self.distance

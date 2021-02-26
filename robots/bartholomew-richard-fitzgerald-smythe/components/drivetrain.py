@@ -175,7 +175,7 @@ class Drivetrain:
     def turn_to_angle(self, angle):
         if self.state != DrivetrainState.PID_TURNING:
             self.pid_manager.stop_controllers()
-            self.navx.reset()
+            #self.navx.reset()
             self.state = DrivetrainState.PID_TURNING
             self.turn_pid.run_setpoint(angle)
 
