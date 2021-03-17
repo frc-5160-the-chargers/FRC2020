@@ -52,6 +52,7 @@ class Powertrain:
     def set_arcade_powers(self, power=None, rotation=None):
         self.mode = PowertrainMode.ARCADE_DRIVE
         self.left_power = self.right_power = 0 
+        print(f"power: {power}, rotation: {rotation}")
         if power != None:
             self.power = power
         if rotation != None:
@@ -97,7 +98,7 @@ class Drivetrain:
     encoders: Encoders
     navx: NavX
     limelight : Limelight
-    shooter : Shooter
+    #shooter : Shooter
 
     def __init__(self):
         self.turn_pid = SuperPIDController(
@@ -128,7 +129,7 @@ class Drivetrain:
             pid_values = RobotMap.Drivetrain.limelight_turn_pid,
             f_in=lambda: self.limelight.get_horizontal_angle_offset(),
             f_out=lambda x: self.powertrain.set_arcade_powers(rotation=x),
-            f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_turn,target,error),
+            f_feedforwards=lambda target, error: ff_constant(0,target,error),
             pid_key=RobotMap.Drivetrain.limelight_turn_pid_key           
         )
         self.limelight_turn_pid.configure_controller(
@@ -138,7 +139,7 @@ class Drivetrain:
 
         self.limelight_distance_pid = SuperPIDController(
             pid_values = RobotMap.Drivetrain.limelight_distance_pid,
-            f_in=lambda: self.limelight.get_distance_trig(),
+            f_in=lambda: self.limelight.get_distance_trig(0.12), #TODO: MAKE PARTIAL FUNCTION OR PASS KWARGS OR **SOMETHING**, NOT THIS
             f_out=lambda x: self.powertrain.set_arcade_powers(power=x),
             f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_straight, target, error),
             pid_key=RobotMap.Drivetrain.limelight_distance_pid_key
@@ -208,7 +209,8 @@ class Drivetrain:
             self.turn_to_angle(self.limelight.get_horizontal_angle_offset, self.start_fire)
 
     def start_fire(self):
-        self.shooter.fire()
+        #self.shooter.fire()
+        print('woopsie doopsie')
 
     def turn_to_limelight_target(self,next = None):
         if self.state != DrivetrainState.PID_LIMELIGHT_TURNING:
@@ -231,7 +233,7 @@ class Drivetrain:
             self.state = DrivetrainState.PID_STRAIGHT
             self.position_pid.run_setpoint(position + self.encoders.get_position(EncoderSide.BOTH));
 
-    def drive_to_limelight_target(self,distance):
+    def drive_to_limelight_target(self,distance,target_height):
         if self.state != DrivetrainState.PID_LIMELIGHT_DRIVE:
             self.pid_manager.stop_controllers();
             self.state = DrivetrainState.PID_LIMELIGHT_DRIVE;

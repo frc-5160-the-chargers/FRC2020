@@ -3,6 +3,8 @@ from wpilib.controller import PIDController
 from utils import PIDValue, clamp
 from dash import get_pid, put_pid
 
+from wpilib import SmartDashboard
+
 import math
 
 def ff_constant(constant, target, error):
@@ -61,6 +63,7 @@ class SuperPIDController:
             self.update_values(get_pid(self.pid_key))
     
     def get_error(self):
+        SmartDashboard.putNumber(self.f_in() - self.pid_controller.getSetpoint());
         return self.f_in() - self.pid_controller.getSetpoint()
 
     def push_to_dash(self):

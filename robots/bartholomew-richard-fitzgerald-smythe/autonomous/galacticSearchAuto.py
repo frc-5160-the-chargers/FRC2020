@@ -1,10 +1,10 @@
 from magicbot import AutonomousStateMachine, state
 
-from ..components.drivetrain import Drivetrain
-from ..components.intake import Intake, IntakeLift, IntakeRoller, IntakeRollerState
-from ..components.sensors import NavX
-from ..components.limelight import Limelight
-from ..utils import AngleUtils
+from components.drivetrain import Drivetrain
+from components.intake import Intake, IntakeLift, IntakeRoller, IntakeRollerState
+from components.sensors import NavX
+from components.limelight import Limelight
+from utils import AngleUtils
 
 
 class GalacticPaths:
@@ -12,7 +12,7 @@ class GalacticPaths:
     RED_PATH = 1;
     
     PATHS = [
-        [0,0,0,0],
+        [24.5,-37.2,48.7,-7.8],
         [0,0,0,0],
         [0,0,0,0],
         [0,0,0,0]
@@ -22,14 +22,17 @@ class GalacticPaths:
 
     CELL_DISTANCE = 10;
 
-    LIFT_POWER = 0.5
+    LIFT_POWER = 0.5;
 
 class GalacticAuto(AutonomousStateMachine):
 
+    MODE_NAME = "Galactic Search Auto"
+    DEFAULT = False
+
     drivetrain: Drivetrain;
     limelight: Limelight;
-    lift: IntakeLift;
-    intake: IntakeRoller;
+    intake_lift: IntakeLift;
+    intake_roller: IntakeRoller;
     navx: NavX
 
     @state(first=True)
@@ -38,16 +41,17 @@ class GalacticAuto(AutonomousStateMachine):
         self.path = -1;
         self.limelight.switch_pipeline(1);
         self.navx.reset();
+        #self.lift.lower_lift(0.5);
         self.next_state_now('find_power_cell');
-        self.lift.lower_lift(0.5);
+        
 
 
     @state() #should be called three times; gets power cell into frame
     def find_power_cell(self,initial_call):
-        if self.limelight.valid_target():
+        if self.limelight.valid_target:
             if self.collected_cells == 0: #identify path; assuming that both front cells should be visible from start location - might need change based on testing
                 print("Initial target spotted");
-                self.path = AngleUtils.closest_angle(self.navx.get_heading() + self.limelight.horizontal_offset,GalacticPaths.BLUE_ANGLES[0],GalacticPaths.RED_ANGLES[0]);
+                self.path = AngleUtils.closest_angle(self.navx.get_heading() + self.limelight.horizontal_offset,GalacticPaths.PATHS[GalacticPaths.BLUE_PATH][0],GalacticPaths.PATHS[GalacticPaths.RED_PATH][0]);
                 self.next_state('target_power_cell');
             elif (abs(self.navx.get_heading() + self.limelight.horizontal_offset - GalacticPaths.PATHS[self.path][self.collected_cells]) < GalacticPaths.ANGLE_TOLERANCE):
                 print("Target Spotted");
@@ -59,6 +63,7 @@ class GalacticAuto(AutonomousStateMachine):
 
     @state() #point towards the limelight target
     def target_power_cell(self,initial_call):
+        print("Centering on cell")
         if initial_call:
             self.drivetrain.turn_to_limelight_target();
         if self.drivetrain.limelight_turn_pid.get_on_target():
@@ -67,10 +72,11 @@ class GalacticAuto(AutonomousStateMachine):
 
     @state()
     def drive_to_power_cell(self,initial_call):
+        print("Full Speed Ahead")
         if initial_call:
-            self.drivetrain.drive_to_limelight_target(GalacticPaths.CELL_DISTANCE);
-        if self.intake.state != IntakeRollerState.INTAKING and self.lift.get_ready():
-            self.intake.intake();
+            self.drivetrain.drive_to_limelight_target(GalacticPaths.CELL_DISTANCE,0.12);
+        if self.intake_roller.state != IntakeRollerState.INTAKING and self.intake_lift.get_ready():
+            self.intake_roller.intake();
         if self.drivetrain.limelight_distance_pid.get_on_target():
             self.collected_cells += 1;
             if self.collected_cells == 3:

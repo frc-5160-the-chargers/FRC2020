@@ -57,7 +57,7 @@ class PosApprox:
         return self.locations[self.master_location];
 
     def update(self,dL,dR,dTheta):
-        print("updated");
+        #print("updated");
         sd = NetworkTables.getTable('SmartDashboard');
         sd.putNumber('locations/num_locations',len(self.locations));
         sd.putNumber('locations/dL',dL);
@@ -86,9 +86,9 @@ class PosApprox:
             out = ((0,(dL + dR)/2),0);
             return out;
 
-        print(f"dL: {dL}");
-        print(f"dR: {dR}");
-        print(f"dTheta: {dTheta}");
+        #print(f"dL: {dL}");
+        #print(f"dR: {dR}");
+        #print(f"dTheta: {dTheta}");
 
         leftOutside = abs(dL) > abs(dR);
         outsideCoeff = 1 if leftOutside else -1;
@@ -100,7 +100,7 @@ class PosApprox:
         elif (approxType == cls.ENCODER_ONLY):
             #rC: central radius - radius of the circle halfway between wheels
             rC = WHEEL_DISTANCE/2 * (dR + dL) / (dL - dR) *  outsideCoeff;
-            print("encoder RC: ", rC);
+            #print("encoder RC: ", rC);
 
             #known arclength, R, over known radius of R, which is shifted from center by a certain amount
             if (dL == 0):

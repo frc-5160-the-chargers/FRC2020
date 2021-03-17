@@ -38,7 +38,7 @@ class Robot(magicbot.MagicRobot):
     drivetrain: Drivetrain
 
     limelight : Limelight
-    shooter : Shooter
+#    shooter : Shooter
 
     color_sensor: WheelOfFortuneSensor
     fortune_controller: ColorWheelController
@@ -53,6 +53,10 @@ class Robot(magicbot.MagicRobot):
 
     def createObjects(self):
         # initialize physical objects
+
+        #limelight
+        self.limelight_table = NetworkTables.getTable("limelight")
+
         # drivetrain
         motor_objects_left = [
             CANSparkMax(port, MotorType.kBrushless) for port in RobotMap.Drivetrain.motors_left
@@ -102,8 +106,8 @@ class Robot(magicbot.MagicRobot):
         config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
 
         # shooter
-        self.shooter_neo_motor = CANSparkMax(RobotMap.Shooter.motor_port)
-        config_spark(self.shooter_neo_motor, RobotMap.Shooter.motor_config) 
+#        self.shooter_neo_motor = CANSparkMax(RobotMap.Shooter.motor_port)
+        #config_spark(self.shooter_neo_motor, RobotMap.Shooter.motor_config) 
     
         
 
@@ -127,7 +131,7 @@ class Robot(magicbot.MagicRobot):
         self.reset_subsystems()
 
     def teleopPeriodic(self):
-        print(self.limelight.get)
+        #print(self.limelight.get)
 
         #print("execute method")
         try:

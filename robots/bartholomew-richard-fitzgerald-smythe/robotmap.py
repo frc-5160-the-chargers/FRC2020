@@ -35,12 +35,12 @@ class RobotMap:
         distance_between_wheels = 22.5
 
         max_motor_power = .4
-        max_auto_power = .35
+        max_auto_power = .15
         turbo_mode_power = .57
 
         #kF = feedforward constants - base loads that need to be provided when on target (estimation). kF_straightz
         kF_straight = .15
-        kF_turn = .3
+        kF_turn = 0
 
         # TODO retune
         turn_pid = PIDValue(-0.0003, 0, -0.001)
@@ -50,10 +50,10 @@ class RobotMap:
         position_pid_key = "Drivetrian Position PID"
 
         #TODO: DEFINETELY retune IMMEDIATELY
-        limelight_turn_pid = PIDValue(-0.0003, 0, -0.001)
+        limelight_turn_pid = PIDValue(0.4, 0.005, 0.5)
         limelight_turn_pid_key = "Drivetrain Limelight Turning PID"
 
-        limelight_distance_pid = PIDValue(-0.035, 0, -0.001)
+        limelight_distance_pid = PIDValue(0.035, 0, 0.001)
         limelight_distance_pid_key = "Drivetrain Limelight Distance Driving PID"
     
     class IntakeLift:
@@ -89,7 +89,7 @@ class RobotMap:
         motor_port = 6
         max_power = .4
 
-        roller_power = .5
+        roller_power = .1
 
         motor_config = TalonMotorConfig(
             voltage_saturation=11,
@@ -167,8 +167,8 @@ class RobotMap:
         right_encoder_b = 3
 
     class Limelight:
-        mount_height = 0.95  # meters
-        mount_angle = 33.6  # degrees
+        mount_height = 0.45  # meters - TEMPORARY
+        mount_angle = 0  # degrees
 
         target_height = 2.3  # meters
 

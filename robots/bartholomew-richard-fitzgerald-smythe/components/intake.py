@@ -151,9 +151,9 @@ class IntakeRoller:
 
     def execute(self):
         if self.state == IntakeRollerState.INTAKING:
-            self.intake_roller_motor.set(RobotMap.IntakeRoller.roller_power)
-        elif self.state == IntakeRollerState.OUTTAKING:
             self.intake_roller_motor.set(-RobotMap.IntakeRoller.roller_power)
+        elif self.state == IntakeRollerState.OUTTAKING:
+            self.intake_roller_motor.set(RobotMap.IntakeRoller.roller_power)
         elif self.state == IntakeRollerState.STOPPED:
             self.intake_roller_motor.stopMotor()
 
