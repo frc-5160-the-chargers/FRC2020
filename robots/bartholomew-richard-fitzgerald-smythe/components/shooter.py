@@ -1,11 +1,12 @@
 from rev import CANSparkMax
+from ctre import WPI_TalonSRX
 from magicbot import tunable
 from components.limelight import Limelight
 from components.sensors import WheelOfFortuneSensor
 from components.serializer import Serializer
 from components.drivetrain import Drivetrain
 class Shooter:
-    neo_motor: CANSparkMax
+    neo_motor: WPI_TalonSRX
     color_sensro : WheelOfFortuneSensor
     serializer : Serializer
     limelight : Limelight
@@ -54,12 +55,17 @@ class Shooter:
             self.set_rpm(0)
             self.drivetrain.reset_state()
 
-    def execute(self):
-        self.update_motor_velocity()
+    def adjust_rpm(self, rpm):
+        self.power += (rpm/100)
+        print(self.power)
 
-        self.neo_motor.set(self.power)
-        if(self.target_rpm > 0 and abs(target_rpm-self.neo_motor.getEncoder().getVelocity()<100))
-            self.serializer.turn_on()
+    def execute(self):
+
+        #self.update_motor_velocity()
+
+        self.neo_motor.set_power(self.power)
+       #if(self.target_rpm > 0 and abs(target_rpm-self.neo_motor.getEncoder().getVelocity()<100)):
+        #    self.serializer.turn_on()
 
 
 class ShooterState:
