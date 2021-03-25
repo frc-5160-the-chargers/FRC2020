@@ -123,7 +123,7 @@ class RobotMap:
     
     class Shooter:
         motor_port = 7
-        max_power = 1
+        max_power = .6
 
         motor_config = TalonMotorConfig(
             voltage_saturation=11,
