@@ -1,6 +1,8 @@
 import wpilib
 import wpilib.drive
 
+#from networktables import NetworkTable
+
 from wpilib import SmartDashboard as dash
 
 from ctre import WPI_TalonSRX

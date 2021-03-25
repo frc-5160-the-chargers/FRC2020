@@ -2,6 +2,8 @@ from networktables import NetworkTable
 
 import math
 
+import networktables
+
 from robotmap import RobotMap
 
 class LED_MODE:
@@ -11,7 +13,7 @@ class LED_MODE:
     ON = 3;
 
 class Limelight:
-    limelight_table: NetworkTable
+    #limelight_table: NetworkTable
 
     def __init__(self):
         self.reset()
