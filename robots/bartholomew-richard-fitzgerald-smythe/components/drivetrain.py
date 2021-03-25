@@ -52,10 +52,12 @@ class Powertrain:
     def set_arcade_powers(self, power=None, rotation=None):
         self.mode = PowertrainMode.ARCADE_DRIVE
         self.left_power = self.right_power = 0 
-        print(f"power: {power}, rotation: {rotation}")
+        
         if power != None:
+            #print(f"power set: {power}");
             self.power = power
         if rotation != None:
+            #print("rotation set",rotation )
             self.rotation = rotation
 
     # basic drive setters
@@ -127,19 +129,19 @@ class Drivetrain:
 
         self.limelight_turn_pid = SuperPIDController(
             pid_values = RobotMap.Drivetrain.limelight_turn_pid,
-            f_in=lambda: self.limelight.get_horizontal_angle_offset(),
+            f_in=lambda: self.limelight.get_last_horizontal_angle_offset(),
             f_out=lambda x: self.powertrain.set_arcade_powers(rotation=x),
-            f_feedforwards=lambda target, error: ff_constant(0,target,error),
+            f_feedforwards=lambda target, error: ff_constant(0.2,target,error),
             pid_key=RobotMap.Drivetrain.limelight_turn_pid_key           
         )
         self.limelight_turn_pid.configure_controller(
             output_range=(-RobotMap.Drivetrain.max_auto_power, RobotMap.Drivetrain.max_auto_power),
-            tolerance=0.5 #tune
+            tolerance=0.5 
         )
 
         self.limelight_distance_pid = SuperPIDController(
             pid_values = RobotMap.Drivetrain.limelight_distance_pid,
-            f_in=lambda: self.limelight.get_distance_trig(0.12), #TODO: MAKE PARTIAL FUNCTION OR PASS KWARGS OR **SOMETHING**, NOT THIS
+            f_in=lambda: self.limelight.get_last_distance_trig(0.12), #TODO: MAKE PARTIAL FUNCTION OR PASS KWARGS OR **SOMETHING**, NOT THIS
             f_out=lambda x: self.powertrain.set_arcade_powers(power=x),
             f_feedforwards=lambda target, error: ff_constant(RobotMap.Drivetrain.kF_straight, target, error),
             pid_key=RobotMap.Drivetrain.limelight_distance_pid_key
@@ -153,6 +155,7 @@ class Drivetrain:
             self.turn_pid,
             self.position_pid,
             self.limelight_turn_pid,
+            self.limelight_distance_pid,
         ])
 
         
@@ -215,6 +218,7 @@ class Drivetrain:
     def turn_to_limelight_target(self,next = None):
         if self.state != DrivetrainState.PID_LIMELIGHT_TURNING:
             self.pid_manager.stop_controllers();
+            self.powertrain.reset_state();
             self.state = DrivetrainState.PID_LIMELIGHT_TURNING;
             self.limelight_turn_pid.run_setpoint(0);
             self.callback = next;
@@ -223,6 +227,7 @@ class Drivetrain:
     def turn_to_angle(self, angle, next = None):
         if self.state != DrivetrainState.PID_TURNING:
             self.pid_manager.stop_controllers()
+            self.powertrain.reset_state();
             self.state = DrivetrainState.PID_TURNING
             self.turn_pid.run_setpoint(angle + self.navx.get_heading())
             self.callback = next
@@ -230,12 +235,14 @@ class Drivetrain:
     def drive_to_position(self, position):
         if self.state != DrivetrainState.PID_STRAIGHT:
             self.pid_manager.stop_controllers()
+            self.powertrain.reset_state();
             self.state = DrivetrainState.PID_STRAIGHT
             self.position_pid.run_setpoint(position + self.encoders.get_position(EncoderSide.BOTH));
 
     def drive_to_limelight_target(self,distance,target_height):
         if self.state != DrivetrainState.PID_LIMELIGHT_DRIVE:
             self.pid_manager.stop_controllers();
+            self.powertrain.reset_state();
             self.state = DrivetrainState.PID_LIMELIGHT_DRIVE;
             self.limelight_turn_pid.run_setpoint(0);
             self.limelight_distance_pid.run_setpoint(distance);

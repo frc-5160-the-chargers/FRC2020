@@ -17,6 +17,7 @@ class Limelight:
         self.reset()
         self.mounting_angle = RobotMap.Limelight.mount_angle
         self.mounting_height = RobotMap.Limelight.mount_height
+        self.FOV = 54; #degrees
 
     def get_horizontal_angle_offset(self):
         '''return the angle needed to turn to make the target in the center of view'''
@@ -25,14 +26,30 @@ class Limelight:
         else:
             return 0
 
+    def get_last_horizontal_angle_offset(self): #same as get_horizontal_angle_offset but defaults tot he most recent value and not zero
+        return self.horizontal_offset
+
     def get_vertical_angle_offset(self):
         if self.valid_target:
             return self.vertical_offset
         else:
             return 0
+
+    def get_last_vertical_angle_offset(self): #same as get_vertical_angle_offset but defaults tot he most recent value and not zero
+        return self.vertical_offset
     
-    def get_distance_trig(self, target_height):
+    def get_distance_trig(self, target_height): #only works when object is centered
         target_angle = self.get_vertical_angle_offset() + self.mounting_angle
+        tan_angle = math.tan(math.radians(target_angle))
+        height_difference = target_height-self.mounting_height
+        
+        if tan_angle != 0:
+            return height_difference/tan_angle
+        else:
+            return 0
+
+    def get_last_distance_trig(self, target_height): #only works when object is centered
+        target_angle = self.get_last_vertical_angle_offset() + self.mounting_angle
         tan_angle = math.tan(math.radians(target_angle))
         height_difference = target_height-self.mounting_height
         

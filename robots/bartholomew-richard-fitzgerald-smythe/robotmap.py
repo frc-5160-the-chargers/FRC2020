@@ -35,7 +35,7 @@ class RobotMap:
         distance_between_wheels = 22.5
 
         max_motor_power = .4
-        max_auto_power = .15
+        max_auto_power = .3
         turbo_mode_power = .57
 
         #kF = feedforward constants - base loads that need to be provided when on target (estimation). kF_straightz
@@ -43,14 +43,14 @@ class RobotMap:
         kF_turn = 0
 
         # TODO retune
-        turn_pid = PIDValue(-0.0003, 0, -0.001)
+        turn_pid = PIDValue(-0.1, 0, -0.01)
         turn_pid_key = "Drivetrain Turn PID"
 
         position_pid = PIDValue(-0.035, 0, -0.001)
         position_pid_key = "Drivetrian Position PID"
 
         #TODO: DEFINETELY retune IMMEDIATELY
-        limelight_turn_pid = PIDValue(0.4, 0.005, 0.5)
+        limelight_turn_pid = PIDValue(0.2, 0.001, 0.1)
         limelight_turn_pid_key = "Drivetrain Limelight Turning PID"
 
         limelight_distance_pid = PIDValue(0.035, 0, 0.001)
@@ -89,7 +89,7 @@ class RobotMap:
         motor_port = 6
         max_power = .4
 
-        roller_power = .1
+        roller_power = .3
 
         motor_config = TalonMotorConfig(
             voltage_saturation=11,

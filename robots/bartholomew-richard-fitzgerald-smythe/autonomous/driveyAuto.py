@@ -9,20 +9,19 @@ class LimelightTurnAuto(AutonomousStateMachine):
     limelight: Limelight
     powertrain: Powertrain
 
-    MODE_NAME = "Limelight Followy Auto"
+    MODE_NAME = "Drive Forward Auto"
     DEFAULT = False
 
 
 
     @state(first=True)
-    def follow_target(self,initial_call):
+    def drive_forward(self,initial_call):
         #print();
         if initial_call:
-            self.limelight.switch_pipeline(0);
-            self.drivetrain.drive_to_limelight_target(0.2,0.15);
-        #print(self.drivetrain.limelight_distance_pid.get_error())
-        SmartDashboard.putNumber("power: ",self.powertrain.power);
-        SmartDashboard.putNumber("rotation: ",self.powertrain.rotation);
+            self.drivetrain.drive_to_position(30);
+        print(self.drivetrain.position_pid.get_error())
+        #SmartDashboard.putNumber("power: ",self.powertrain.power);
+        #SmartDashboard.putNumber("rotation: ",self.powertrain.rotation);
 
 
 

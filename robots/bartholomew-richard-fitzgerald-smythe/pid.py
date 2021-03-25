@@ -63,7 +63,7 @@ class SuperPIDController:
             self.update_values(get_pid(self.pid_key))
     
     def get_error(self):
-        SmartDashboard.putNumber(self.f_in() - self.pid_controller.getSetpoint());
+        SmartDashboard.putNumber("limelight error",self.f_in() - self.pid_controller.getSetpoint());
         return self.f_in() - self.pid_controller.getSetpoint()
 
     def push_to_dash(self):
@@ -80,6 +80,7 @@ class SuperPIDController:
         pid_output = self.pid_controller.calculate(self.f_in())
         output = pid_output + self.ff(self.get_target(), pid_output)
         output = clamp(output, self.output_range[0], self.output_range[1])
+        self.get_error();
         return output
 
     def execute(self):
