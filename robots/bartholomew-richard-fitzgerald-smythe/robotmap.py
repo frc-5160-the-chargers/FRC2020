@@ -122,7 +122,7 @@ class RobotMap:
         )
     
     class Shooter:
-        motor_port = 7
+        motor_port = 8
         max_power = 1
 
         motor_config = TalonMotorConfig(
