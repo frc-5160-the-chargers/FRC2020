@@ -4,13 +4,13 @@ from magicbot import tunable
 from components.limelight import Limelight
 from components.sensors import WheelOfFortuneSensor
 from components.serializer import Serializer
-from components.drivetrain import Drivetrain
+#from components.drivetrain import Drivetrain
 class Shooter:
     neo_motor: WPI_TalonSRX
     color_sensro : WheelOfFortuneSensor
     serializer : Serializer
     limelight : Limelight
-    drivetrain : Drivetrain
+    #drivetrain : Drivetrain
 
     def __init__(self):
         self.power = 0

@@ -6,7 +6,7 @@ from robotmap import RobotMap
 
 
 class Limelight:
-    limelight_table: NetworkTable
+    #limelight_table: NetworkTable
 
     def __init__(self):
         self.reset()

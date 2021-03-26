@@ -1,6 +1,8 @@
 import wpilib
 import wpilib.drive
 
+from networktables import NetworkTable
+
 from wpilib import SmartDashboard as dash
 
 from ctre import WPI_TalonSRX
@@ -49,6 +51,8 @@ class Robot(magicbot.MagicRobot):
     def createObjects(self):
         # initialize physical objects
         # drivetrain
+
+        self.limelight_table = NetworkTable.getTable('limelight')
         motor_objects_left = [
             CANSparkMax(port, MotorType.kBrushless) for port in RobotMap.Drivetrain.motors_left
         ]
