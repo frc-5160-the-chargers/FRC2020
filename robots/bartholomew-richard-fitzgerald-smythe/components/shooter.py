@@ -58,7 +58,7 @@ class Shooter:
             self.state = ShooterState.SHOOTER_OFF
             self.serializer.turn_off
             self.set_power(0)
-            self.drivetrain.reset_state()
+            #self.drivetrain.reset_state()
 
     def adjust_power(self, rpm):
         self.power += (rpm/200)
