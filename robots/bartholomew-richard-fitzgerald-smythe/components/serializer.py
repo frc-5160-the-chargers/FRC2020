@@ -22,7 +22,7 @@ class Serializer:
             self.power = 0
 
     def execute(self):
-        serializer_motor.set(self.power)
+        self.serializer_motor.set(self.power)
         #set moter power
         
 

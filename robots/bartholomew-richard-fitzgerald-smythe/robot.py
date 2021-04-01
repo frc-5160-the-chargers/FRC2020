@@ -39,6 +39,7 @@ class Robot(magicbot.MagicRobot):
 
     limelight : Limelight
     shooter : Shooter
+    serializer : Serializer
 
     color_sensor: WheelOfFortuneSensor
     fortune_controller: ColorWheelController
@@ -135,6 +136,7 @@ class Robot(magicbot.MagicRobot):
 
     def teleopInit(self):
         self.reset_subsystems()
+        self.serializer.turn_on()
 
     def teleopPeriodic(self):
         try:
