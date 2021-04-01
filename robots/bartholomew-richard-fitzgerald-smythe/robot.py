@@ -1,5 +1,12 @@
+from math import e
 import wpilib
 import wpilib.drive
+import traceback
+
+
+from networktables import NetworkTables
+
+#from networktables import NetworkTable
 
 from wpilib import SmartDashboard as dash
 
@@ -18,13 +25,17 @@ from oi import Driver, Sysop
 from utils import config_spark, config_talon
 from robotmap import RobotMap
 from dash import Tunable
+from components.limelight import Limelight
 
 from components.drivetrain import Drivetrain, Powertrain, DrivetrainState, EncoderSide
 from components.sensors import Encoders, NavX, WheelOfFortuneSensor, WheelOfFortuneColor
 from components.colorWheel import ColorWheelController, ColorWheelState
 from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
+from components.shooter import Shooter
+from components.serializer import Serializer
 from components.position_approximation import PosApprox
+
 class Robot(magicbot.MagicRobot):
     location: PosApprox
 
@@ -32,6 +43,11 @@ class Robot(magicbot.MagicRobot):
     encoders: Encoders
     navx: NavX
     drivetrain: Drivetrain
+
+    limelight : Limelight
+
+    shooter : Shooter
+    serializer : Serializer
 
     color_sensor: WheelOfFortuneSensor
     fortune_controller: ColorWheelController
@@ -41,10 +57,18 @@ class Robot(magicbot.MagicRobot):
     intake: Intake
 
     climber: Climber
+    
+    serializer : Serializer
 
     def createObjects(self):
         # initialize physical objects
+
+        #limelight
+        self.limelight_table = NetworkTables.getTable("limelight")
+
         # drivetrain
+
+        self.limelight_table = NetworkTables.getTable('limelight')
         motor_objects_left = [
             CANSparkMax(port, MotorType.kBrushless) for port in RobotMap.Drivetrain.motors_left
         ]
@@ -64,7 +88,6 @@ class Robot(magicbot.MagicRobot):
         self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_b, RobotMap.Encoders.left_encoder_a)
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_b, RobotMap.Encoders.right_encoder_a)
         self.right_encoder.setReverseDirection(False)
-
         self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
         self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
 
@@ -79,11 +102,14 @@ class Robot(magicbot.MagicRobot):
         self.intake_lift_motor.configPeakOutputReverse(-RobotMap.IntakeLift.max_power)
         config_talon(self.intake_lift_motor, RobotMap.IntakeLift.motor_config)
         self.intake_lift_motor.setSelectedSensorPosition(0)
+        
 
         self.intake_roller_motor = WPI_TalonSRX(RobotMap.IntakeRoller.motor_port)
         self.intake_roller_motor.configPeakOutputForward(RobotMap.IntakeRoller.max_power)
         self.intake_roller_motor.configPeakOutputReverse(-RobotMap.IntakeRoller.max_power)
         config_talon(self.intake_roller_motor, RobotMap.IntakeRoller.motor_config)
+        #self.intake_roller_motor.setSelectedSensorPosition(0)
+        
 
         # climber
         self.climber_motor = WPI_TalonSRX(RobotMap.Climber.motor_port)
@@ -93,6 +119,14 @@ class Robot(magicbot.MagicRobot):
         self.color_wheel_motor = WPI_TalonSRX(RobotMap.ColorWheel.motor_port)
         config_talon(self.color_wheel_motor, RobotMap.ColorWheel.motor_config)
 
+        # shooter
+        self.shooter_motor = WPI_TalonSRX(RobotMap.Shooter.motor_port)
+        config_talon(self.shooter_motor, RobotMap.Shooter.motor_config) 
+
+        # serializer
+        self.serializer_motor = WPI_TalonSRX(RobotMap.Serializer.motor_port)
+        config_talon(self.serializer_motor, RobotMap.Serializer.motor_config) 
+    
         
 
         self.i2c_color_sensor = ColorSensorV3(wpilib.I2C.Port.kOnboard)
@@ -106,15 +140,17 @@ class Robot(magicbot.MagicRobot):
         wpilib.CameraServer.launch()
 
 
-
     def reset_subsystems(self):
         self.drivetrain.reset()
         self.climber.reset()
+        self.limelight.reset()
 
     def teleopInit(self):
         self.reset_subsystems()
+        self.serializer.turn_on()
 
     def teleopPeriodic(self):
+        #print(self.limelight.get)
         #print(self.color_wheel_motor.__dir__());
         #print("execute method")
         try:
@@ -151,6 +187,7 @@ class Robot(magicbot.MagicRobot):
             print("INTAKE LIFT ERROR")
 
         try:
+            #print(self.intake_roller_motor.getSelectedSensorPosition());
             # intake rollers
             if self.sysop.get_intake_intake():
                 self.intake_roller.intake()
@@ -160,6 +197,19 @@ class Robot(magicbot.MagicRobot):
                 self.intake_roller.stop()
         except:
             print("INTAKE ROLLER ERROR")
+
+        try:
+            if self.sysop.get_target_aim():
+                self.drivetrain.aim_at_target()
+            elif self.sysop.get_shooter_stop():
+                self.shooter.stop_fire()
+                self.drivetrain.reset_state();
+            elif self.sysop.get_change_shooter_power() != 0:
+                self.shooter.adjust_power(self.sysop.get_change_shooter_power())
+
+        except:
+            traceback.print_exc();
+            print("AUTO AIM ERROR")
 
         try:
             self.climber.set_power(self.sysop.get_climb_axis())

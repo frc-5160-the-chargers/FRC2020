@@ -65,8 +65,21 @@ class Sysop:
     def get_intake_outtake(self):
         return self.controller.getAButton()
 
+    def get_target_aim(self):
+        return self.controller.getXButton()
+    
+    def get_shooter_stop(self):
+        return self.controller.getYButton()
+
     def get_intake_intake(self):
         return self.controller.getBButton()
+
+    #temp shooter testing
+    def get_change_shooter_power(self):
+        if self.controller.getStickButton(XboxController.Hand.kLeftHand):
+            return self.controller.getX(XboxController.Hand.kLeftHand)
+        else:
+            return 0
 
     def process_lift_axis(self, i):
         i = math.copysign(deadzone(i, RobotMap.OI.lift_deadband) ** 2, i)
