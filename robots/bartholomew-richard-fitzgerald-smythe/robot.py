@@ -151,7 +151,7 @@ class Robot(magicbot.MagicRobot):
 
     def teleopPeriodic(self):
         #print(self.limelight.get)
-
+        #print(self.color_wheel_motor.__dir__());
         #print("execute method")
         try:
             # drive the drivetrain as needed

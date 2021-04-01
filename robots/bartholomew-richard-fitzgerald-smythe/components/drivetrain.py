@@ -223,12 +223,12 @@ class Drivetrain:
             self.limelight_turn_pid.run_setpoint(0);
             self.callback = next;
             
-    def turn_to_angle(self, angle, next = None):
-        if self.state != DrivetrainState.PID_TURNING:
+    def turn_to_angle(self, angle, next = None, global=False):
+        if self.state != DrivetrainState.PID_TURNING or (angle + (self.navx.get_heading() if not global else 0)) != self.turn_pid.get_target():
             self.pid_manager.stop_controllers()
             self.powertrain.reset_state();
             self.state = DrivetrainState.PID_TURNING
-            self.turn_pid.run_setpoint(angle + self.navx.get_heading())
+            self.turn_pid.run_setpoint(angle + (self.navx.get_heading() if not global else 0))
             self.callback = next
 
     def drive_to_position(self, position):
