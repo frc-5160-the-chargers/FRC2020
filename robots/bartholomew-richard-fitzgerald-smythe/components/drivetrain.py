@@ -171,7 +171,7 @@ class Drivetrain:
     
     def aim_at_target(self):
         if self.state == DrivetrainState.MANUAL_DRIVE:
-            self.turn_to_angle(self.limelight.get_horizontal_angle_offset, self.start_fire)
+            self.turn_to_angle(self.limelight.get_horizontal_angle_offset(), self.start_fire)
 
     def start_fire(self):
         self.shooter.fire()

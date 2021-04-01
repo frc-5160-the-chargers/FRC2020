@@ -134,6 +134,8 @@ class RobotMap:
             ramp_rate=0.25
         )
 
+        target_height = 8*12; #modify 
+
     class Serializer:
         motor_port = -1
         max_power = .1
