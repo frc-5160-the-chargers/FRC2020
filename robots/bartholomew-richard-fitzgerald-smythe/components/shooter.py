@@ -42,7 +42,7 @@ class Shooter:
         self.power = 0
     
     def distance_power_calculator(self):
-        power = self.limelight.get_distance_trig() * .1
+        power = self.limelight.get_distance_trig(RobotMap.Shooter.target_height) * .1
         return power
 
     def set_power(self, power):

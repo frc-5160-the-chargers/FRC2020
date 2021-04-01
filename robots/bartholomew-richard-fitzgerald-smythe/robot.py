@@ -1,6 +1,8 @@
 from math import e
 import wpilib
 import wpilib.drive
+import traceback
+
 
 from networktables import NetworkTables
 
@@ -180,9 +182,12 @@ class Robot(magicbot.MagicRobot):
                 self.drivetrain.aim_at_target()
             elif self.sysop.get_shooter_stop():
                 self.shooter.stop_fire()
+                self.drivetrain.reset_state();
             elif self.sysop.get_change_shooter_power() != 0:
                 self.shooter.adjust_power(self.sysop.get_change_shooter_power())
+
         except:
+            traceback.print_exc();
             print("AUTO AIM ERROR")
 
         try:
