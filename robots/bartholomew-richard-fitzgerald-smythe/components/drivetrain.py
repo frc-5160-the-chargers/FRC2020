@@ -178,6 +178,11 @@ class Drivetrain:
             self.navx.reset()
             self.state = DrivetrainState.PID_TURNING
             self.turn_pid.run_setpoint(angle)
+    
+    def special_turn_to_angle(self, angle):
+        self.pid_manager.stop_controllers()
+        #self.navx.reset()
+        self.turn_pid.run_setpoint(angle)
 
     def drive_to_position(self, position):
         if self.state != DrivetrainState.PID_STRAIGHT:
