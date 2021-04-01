@@ -7,7 +7,7 @@ from components.serializer import Serializer
 #from components.drivetrain import Drivetrain
 class Shooter:
     neo_motor: WPI_TalonSRX
-    color_sensro : WheelOfFortuneSensor
+    #color_sensro : WheelOfFortuneSensor
     serializer : Serializer
     limelight : Limelight
     #drivetrain : Drivetrain
@@ -63,7 +63,7 @@ class Shooter:
 
         #self.update_motor_velocity()
 
-        self.neo_motor.set_power(self.power)
+        self.neo_motor.set(self.power)
        #if(self.target_rpm > 0 and abs(target_rpm-self.neo_motor.getEncoder().getVelocity()<100)):
         #    self.serializer.turn_on()
 
