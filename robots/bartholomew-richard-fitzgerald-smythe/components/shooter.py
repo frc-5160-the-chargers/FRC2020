@@ -64,8 +64,6 @@ class Shooter:
 
     def execute(self):
 
-        #self.update_motor_velocity()
-
         self.neo_motor.set_power(self.power)
        #if(self.target_rpm > 0 and abs(target_rpm-self.neo_motor.getEncoder().getVelocity()<100)):
         #    self.serializer.turn_on()
