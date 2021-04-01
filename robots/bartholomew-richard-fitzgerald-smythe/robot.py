@@ -109,6 +109,10 @@ class Robot(magicbot.MagicRobot):
         # shooter
         self.shooter_motor = WPI_TalonSRX(RobotMap.Shooter.motor_port)
         config_talon(self.shooter_motor, RobotMap.Shooter.motor_config) 
+
+        # serializer
+        self.serializer_motor = WPI_TalonSRX(RobotMap.Serializer.motor_port)
+        config_talon(self.serializer_motor, RobotMap.Serializer.motor_config) 
     
         
 
