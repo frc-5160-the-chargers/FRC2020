@@ -45,7 +45,9 @@ class Robot(magicbot.MagicRobot):
     drivetrain: Drivetrain
 
     limelight : Limelight
-#    shooter : Shooter
+
+    shooter : Shooter
+    serializer : Serializer
 
     color_sensor: WheelOfFortuneSensor
     fortune_controller: ColorWheelController
@@ -120,6 +122,10 @@ class Robot(magicbot.MagicRobot):
         # shooter
         self.shooter_motor = WPI_TalonSRX(RobotMap.Shooter.motor_port)
         config_talon(self.shooter_motor, RobotMap.Shooter.motor_config) 
+
+        # serializer
+        self.serializer_motor = WPI_TalonSRX(RobotMap.Serializer.motor_port)
+        config_talon(self.serializer_motor, RobotMap.Serializer.motor_config) 
     
         
 
@@ -141,6 +147,7 @@ class Robot(magicbot.MagicRobot):
 
     def teleopInit(self):
         self.reset_subsystems()
+        self.serializer.turn_on()
 
     def teleopPeriodic(self):
         #print(self.limelight.get)

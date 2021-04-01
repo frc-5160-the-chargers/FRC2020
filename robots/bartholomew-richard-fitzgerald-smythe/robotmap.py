@@ -147,8 +147,8 @@ class RobotMap:
         target_height = 8*12; #modify 
 
     class Serializer:
-        motors = [-1, -2]
-        max_power = 1
+        motor_port = -1
+        max_power = .1
 
         motor_config = SparkMotorConfig(
             voltage_compensation=11,
