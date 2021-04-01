@@ -7,6 +7,11 @@ import networktables
 
 from robotmap import RobotMap
 
+class LED_MODE:
+    DEFAULT = 0;
+    OFF = 1;
+    BLINK = 2;
+    ON = 3;
 
 class Limelight:
     #limelight_table: NetworkTable
@@ -15,6 +20,7 @@ class Limelight:
         self.reset()
         self.mounting_angle = RobotMap.Limelight.mount_angle
         self.mounting_height = RobotMap.Limelight.mount_height
+        self.FOV = 54; #degrees
         self.limelight_table = NetworkTables.getTable('limelight')
 
     def get_horizontal_angle_offset(self):
@@ -24,13 +30,19 @@ class Limelight:
         else:
             return 0
 
+    def get_last_horizontal_angle_offset(self): #same as get_horizontal_angle_offset but defaults tot he most recent value and not zero
+        return self.horizontal_offset
+
     def get_vertical_angle_offset(self):
         if self.valid_target:
             return self.vertical_offset
         else:
             return 0
+
+    def get_last_vertical_angle_offset(self): #same as get_vertical_angle_offset but defaults tot he most recent value and not zero
+        return self.vertical_offset
     
-    def get_distance_trig(self, target_height):
+    def get_distance_trig(self, target_height): #only works when object is centered
         target_angle = self.get_vertical_angle_offset() + self.mounting_angle
         tan_angle = math.tan(math.radians(target_angle))
         height_difference = target_height-self.mounting_height
@@ -39,6 +51,22 @@ class Limelight:
             return height_difference/tan_angle
         else:
             return 0
+
+    def get_last_distance_trig(self, target_height): #only works when object is centered
+        target_angle = self.get_last_vertical_angle_offset() + self.mounting_angle
+        tan_angle = math.tan(math.radians(target_angle))
+        height_difference = target_height-self.mounting_height
+        
+        if tan_angle != 0:
+            return height_difference/tan_angle
+        else:
+            return 0
+
+    def switch_pipeline(self,pipeline):
+        self.limelight_table.putNumber('pipeline',pipeline);
+
+    def switch_led_mode(self,mode):
+        self.limelight_table.putNumber('ledMode',mode);
     
     def reset(self):
         self.valid_target = False

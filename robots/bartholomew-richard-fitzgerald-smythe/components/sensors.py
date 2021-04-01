@@ -65,7 +65,7 @@ class NavX:
 
         self.navx_ahrs.reset()
 
-    def get_heading(self):
+    def get_heading(self): #in degrees
         return self.navx_ahrs.getAngle()
 
     def execute(self):

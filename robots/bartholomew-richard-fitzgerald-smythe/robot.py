@@ -6,6 +6,8 @@ import traceback
 
 from networktables import NetworkTables
 
+#from networktables import NetworkTable
+
 from wpilib import SmartDashboard as dash
 
 from ctre import WPI_TalonSRX
@@ -18,6 +20,7 @@ from ctre import WPI_TalonSRX
 
 import navx
 
+from networktables import NetworkTables
 from oi import Driver, Sysop
 from utils import config_spark, config_talon
 from robotmap import RobotMap
@@ -31,13 +34,18 @@ from components.intake import IntakeLift, IntakeRoller, Intake, IntakeLiftState
 from components.climber import Climber
 from components.shooter import Shooter
 from components.serializer import Serializer
+from components.position_approximation import PosApprox
+
 class Robot(magicbot.MagicRobot):
+    location: PosApprox
+
     powertrain: Powertrain
     encoders: Encoders
     navx: NavX
     drivetrain: Drivetrain
 
     limelight : Limelight
+
     shooter : Shooter
     serializer : Serializer
 
@@ -54,6 +62,10 @@ class Robot(magicbot.MagicRobot):
 
     def createObjects(self):
         # initialize physical objects
+
+        #limelight
+        self.limelight_table = NetworkTables.getTable("limelight")
+
         # drivetrain
 
         self.limelight_table = NetworkTables.getTable('limelight')
@@ -74,10 +86,8 @@ class Robot(magicbot.MagicRobot):
         self.differential_drive.setMaxOutput(RobotMap.Drivetrain.max_motor_power)
 
         self.left_encoder = wpilib.Encoder(RobotMap.Encoders.left_encoder_b, RobotMap.Encoders.left_encoder_a)
-
         self.right_encoder = wpilib.Encoder(RobotMap.Encoders.right_encoder_b, RobotMap.Encoders.right_encoder_a)
-        self.right_encoder.setReverseDirection(True)
-        
+        self.right_encoder.setReverseDirection(False)
         self.left_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
         self.right_encoder.setDistancePerPulse(RobotMap.Encoders.distance_per_pulse)
 
@@ -125,6 +135,7 @@ class Robot(magicbot.MagicRobot):
         self.driver = Driver(wpilib.XboxController(0))
         self.sysop = Sysop(wpilib.XboxController(1))
 
+        NetworkTables.initialize(server="roborio");
         # camera server
         wpilib.CameraServer.launch()
 
@@ -139,13 +150,17 @@ class Robot(magicbot.MagicRobot):
         self.serializer.turn_on()
 
     def teleopPeriodic(self):
+        #print(self.limelight.get)
+
+        #print("execute method")
         try:
             # drive the drivetrain as needed
             driver_x, driver_y = self.driver.get_curvature_output()
             # manually handled driving
             if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
                 self.drivetrain.curvature_drive(driver_y, driver_x)
-                
+            elif self.drivetrain.state == DrivetrainState.AIM_TO_TARGET:
+                self.drivetrain.aim_to_target();
 
             # set turbo mode
             self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
@@ -156,9 +171,9 @@ class Robot(magicbot.MagicRobot):
             # elif self.drivetrain.state == DrivetrainState.AIDED_DRIVE_STRAIGHT:
             #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
 
-            # # revert to manual control if enabled
-            # if self.driver.get_manual_control_override():
-            #     self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
+            # revert to manual control if enabled
+            if self.driver.get_manual_control_override():
+                self.drivetrain.state = DrivetrainState.MANUAL_DRIVE
         except:
             print("DRIVETRAIN ERROR")
 
@@ -231,3 +246,5 @@ class Robot(magicbot.MagicRobot):
 if __name__ == '__main__':
     git_gud = lambda: wpilib.run(Robot)
     git_gud()
+
+#py robots\bartholomew-richard-fitzgerald-smythe\robot.py deploy --no-version-check --nc

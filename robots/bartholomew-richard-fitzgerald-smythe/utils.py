@@ -68,3 +68,8 @@ class PIDValue:
 
     def update_controller(self, controller: PIDController) -> None:
         controller.setPID(self.p, self.i, self.d)
+
+class AngleUtils:
+    @staticmethod
+    def closest_angle(in_angle,a1,a2):
+        return 0 if ((in_angle - a1 + 180) % 360 - 180) <= ((in_angle - a2 + 180) % 360 - 180) else 1;
