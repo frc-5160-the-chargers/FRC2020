@@ -1,13 +1,18 @@
 from rev import CANSparkMax
+from ctre import WPI_TalonSRX
 from magicbot import tunable
+import math
+from robotmap import RobotMap
 from components.limelight import Limelight
 from components.sensors import WheelOfFortuneSensor
 from components.serializer import Serializer
+#from components.drivetrain import Drivetrain
 class Shooter:
-    neo_motor: CANSparkMax
-    color_sensro : WheelOfFortuneSensor
+    shooter_motor: WPI_TalonSRX
+    #color_sensro : WheelOfFortuneSensor
     serializer : Serializer
     limelight : Limelight
+    #drivetrain : Drivetrain
 
     def __init__(self):
         self.power = 0
@@ -17,7 +22,7 @@ class Shooter:
         self.state = ShooterState.SHOOTER_OFF
 
     def get_raw_velocity(self):
-        return self.neo_motor.getEncoder().getVelocity()
+        return self.shooter_motor.getEncoder().getVelocity()
 
     def update_pid(self, kP, kF):
         self.shooter_kP = kP
@@ -27,7 +32,7 @@ class Shooter:
         self.target_rpm = rpm
 
     def update_motor_velocity(self):
-        rpm_error = self.neo_motor.getEncoder().getVelocity() - self.target_rpm
+        rpm_error = self.shooter_motor.getEncoder().getVelocity() - self.target_rpm
         kP = self.shooter_kP * rpm_error
         kF = self.target_rpm * self.shooter_kF
         self.power = kP + kF
@@ -36,27 +41,37 @@ class Shooter:
         self.target_rpm = 0
         self.power = 0
     
-    def distance_rpm_calculator(self):
-        rpm = self.limelight.get_distance_trig() * 10
-        return rpm
+    def distance_power_calculator(self):
+        power = self.limelight.get_distance_trig(RobotMap.Shooter.target_height) * .1
+        return power
+
+    def set_power(self, power):
+        self.power = power
 
     def fire(self):
         if(self.state == ShooterState.SHOOTER_OFF):
             self.state = ShooterState.SHOOTER_ON
-            self.serializer.turn_on
-            self.set_rpm(self.distance_rpm_calculator())
+            self.set_power(self.distance_power_calculator())
 
     def stop_fire(self):
         if(self.state == ShooterState.SHOOTER_ON):
             self.state = ShooterState.SHOOTER_OFF
             self.serializer.turn_off
-            self.set_rpm(0)
+            self.set_power(0)
+            #self.drivetrain.reset_state()
+
+    def adjust_power(self, rpm):
+        self.power += (rpm/200)
+        self.power = min(max(-RobotMap.Shooter.max_power,self.power),RobotMap.Shooter.max_power)
+        print(self.power)
 
     def execute(self):
-        self.update_motor_velocity()
 
-        self.neo_motor.set(self.power)
-        
+        #self.update_motor_velocity()
+        #print('hello')
+        self.shooter_motor.set(self.power)
+       #if(self.target_rpm > 0 and abs(target_rpm-self.shooter_motor.getEncoder().getVelocity()<100)):
+        #    self.serializer.turn_on()
 
 
 class ShooterState:

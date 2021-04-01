@@ -87,7 +87,7 @@ class DrivetrainState:
     
     # 10-19 == aided modes
     AIDED_DRIVE_STRAIGHT = 10
-    TARGET_AIM = 11
+    STOPPPED = 11
     # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
@@ -209,11 +209,11 @@ class Drivetrain:
     
     def aim_at_target(self):
         if self.state == DrivetrainState.MANUAL_DRIVE:
-            self.turn_to_angle(self.limelight.get_horizontal_angle_offset, self.start_fire)
+            self.turn_to_angle(self.limelight.get_horizontal_angle_offset(), self.start_fire)
 
     def start_fire(self):
-        #self.shooter.fire()
-        print('woopsie doopsie')
+        self.shooter.fire()
+        self.state = DrivetrainState.STOPPPED
 
     def turn_to_limelight_target(self,next = None):
         if self.state != DrivetrainState.PID_LIMELIGHT_TURNING:
@@ -222,8 +222,7 @@ class Drivetrain:
             self.state = DrivetrainState.PID_LIMELIGHT_TURNING;
             self.limelight_turn_pid.run_setpoint(0);
             self.callback = next;
-
-
+            
     def turn_to_angle(self, angle, next = None):
         if self.state != DrivetrainState.PID_TURNING:
             self.pid_manager.stop_controllers()

@@ -132,16 +132,19 @@ class RobotMap:
         )
     
     class Shooter:
-        motor_port = 7
-        max_power = 1
+        motor_port = 8
+        max_power = .6
 
-        motor_config = SparkMotorConfig(
-            voltage_compensation=11,
-            stall_current_limit=39,
-            default_mode=IdleMode.kBrake,
-            ramp_rate=1,
-            reverse_motor=True
+        motor_config = TalonMotorConfig(
+            voltage_saturation=11,
+            deadband=.05,
+            peak_current=60,
+            continuous_current=39,
+            default_mode=NeutralMode.Brake,
+            ramp_rate=0.25
         )
+
+        target_height = 8*12; #modify 
 
     class Serializer:
         motors = [-1, -2]
