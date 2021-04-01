@@ -172,7 +172,7 @@ class Robot(magicbot.MagicRobot):
             elif self.sysop.get_shooter_stop():
                 self.shooter.stop_fire()
             elif self.sysop.get_change_shooter_power() != 0:
-                self.shooter.adjust_rpm(self.sysop.get_change_shooter_power())
+                self.shooter.adjust_power(self.sysop.get_change_shooter_power())
         except:
             print("AUTO AIM ERROR")
 

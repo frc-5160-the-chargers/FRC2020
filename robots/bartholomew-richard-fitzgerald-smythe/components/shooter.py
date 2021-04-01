@@ -39,23 +39,26 @@ class Shooter:
         self.target_rpm = 0
         self.power = 0
     
-    def distance_rpm_calculator(self):
-        rpm = self.limelight.get_distance_trig() * 500
-        return rpm
+    def distance_power_calculator(self):
+        power = self.limelight.get_distance_trig() * .1
+        return power
+
+    def set_power(self, power):
+        self.power = power
 
     def fire(self):
         if(self.state == ShooterState.SHOOTER_OFF):
             self.state = ShooterState.SHOOTER_ON
-            self.set_rpm(self.distance_rpm_calculator())
+            self.set_power(self.distance_power_calculator())
 
     def stop_fire(self):
         if(self.state == ShooterState.SHOOTER_ON):
             self.state = ShooterState.SHOOTER_OFF
             self.serializer.turn_off
-            self.set_rpm(0)
+            self.set_power(0)
             self.drivetrain.reset_state()
 
-    def adjust_rpm(self, rpm):
+    def adjust_power(self, rpm):
         self.power += (rpm/100)
         print(self.power)
 
