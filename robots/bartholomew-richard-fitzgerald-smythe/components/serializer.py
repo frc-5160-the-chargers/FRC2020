@@ -17,8 +17,8 @@ class Serializer:
             self.power = .1
     
     def turn_off(self):
-        if (self.state == SerializerState.SERIALIZER_OFF):
-            self.state = SerializerState.SERIALIZER_ON
+        if (self.state == SerializerState.SERIALIZER_ON):
+            self.state = SerializerState.SERIALIZER_OFF
             self.power = 0
 
     def execute(self):
