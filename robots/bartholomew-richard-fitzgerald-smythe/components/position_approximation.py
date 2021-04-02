@@ -51,6 +51,12 @@ class PosApprox:
         for location in self.locations:
             location.reset();
 
+    def encoder_reset(self):
+        self.last_positions = [0,0,self.last_positions[2]];
+
+    def navx_reset(self):
+        self.last_positions = self.last_positions[:2] + [0];
+
     def get_offsets(self): #master offsets
         return self.offsets[self.master_location];
     def get_location(self):

@@ -18,6 +18,7 @@ class Autonav(AutonomousStateMachine):
 
     nodes = Paths.SLALOM
     index = 0
+    distance_traveled = 0;
 
     @state(first=True)
     def track(self, initial_call):
@@ -32,18 +33,20 @@ class Autonav(AutonomousStateMachine):
             self.index = 0
             self.drivetrain.navx.reset()
             self.drivetrain.encoders.reset()
-            self.drivetrain.powertrain.set_arcade_powers(power=-RobotMap.Drivetrain.max_auto_power)
-            self.drivetrain.special_turn_to_angle(self.nodes[self.index][0])
+            self.drivetrain.turn_to_angle(self.nodes[self.index][0],global=True)
 
         
         elif self.index >= len(self.nodes)-1:
             self.drivetrain.stop()
             self.done()
         
-        elif self.drivetrain.get_position(EncoderSide.BOTH) > self.nodes[self.index][1]:
+        elif self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled > self.nodes[self.index][1]:
             self.drivetrain.turn_pid.stop()
             self.index+=1
-            self.drivetrain.special_turn_to_angle(self.nodes[self.index][0])
-            self.drivetrain.encoders.reset()
+            self.drivetrain.turn_to_angle(self.nodes[self.index][0],global=True)
+            self.distance_traveled = self.drivetrain.get_position(EncoderSide.BOTH)
             #print("node switch")
+
+        self.drivetrain.powertrain.set_arcade_powers(power=-RobotMap.Drivetrain.max_auto_power)
+
             
