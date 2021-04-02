@@ -150,11 +150,13 @@ class RobotMap:
         motor_port = -1
         max_power = .1
 
-        motor_config = SparkMotorConfig(
-            voltage_compensation=11,
-            stall_current_limit=39,
-            default_mode=IdleMode.kBrake,
-            ramp_rate=1,
+        motor_config = TalonMotorConfig(
+            voltage_saturation=11,
+            deadband=0.05,
+            peak_current=60,
+            continuous_current=39,
+            default_mode=NeutralMode.Brake,
+            ramp_rate=.2,
             reverse_motor=True
         )
 

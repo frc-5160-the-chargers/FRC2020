@@ -33,7 +33,7 @@ class Autonav(AutonomousStateMachine):
             self.index = 0
             self.drivetrain.navx.reset()
             self.drivetrain.encoders.reset()
-            self.drivetrain.turn_to_angle(self.nodes[self.index][0],global=True)
+            self.drivetrain.turn_to_angle(self.nodes[self.index][0],global_angle=True)
 
         
         elif self.index >= len(self.nodes)-1:
@@ -43,7 +43,7 @@ class Autonav(AutonomousStateMachine):
         elif self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled > self.nodes[self.index][1]:
             self.drivetrain.turn_pid.stop()
             self.index+=1
-            self.drivetrain.turn_to_angle(self.nodes[self.index][0],global=True)
+            self.drivetrain.turn_to_angle(self.nodes[self.index][0],global_angle=True)
             self.distance_traveled = self.drivetrain.get_position(EncoderSide.BOTH)
             #print("node switch")
 

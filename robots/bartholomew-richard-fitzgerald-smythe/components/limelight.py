@@ -14,14 +14,14 @@ class LED_MODE:
     ON = 3;
 
 class Limelight:
-    #limelight_table: NetworkTable
+    limelight_table: NetworkTable
 
     def __init__(self):
         self.reset()
         self.mounting_angle = RobotMap.Limelight.mount_angle
         self.mounting_height = RobotMap.Limelight.mount_height
         self.FOV = 54; #degrees
-        self.limelight_table = NetworkTables.getTable('limelight')
+        # self.limelight_table = NetworkTables.getTable('limelight')
 
     def get_horizontal_angle_offset(self):
         '''return the angle needed to turn to make the target in the center of view'''

@@ -2,7 +2,7 @@ from wpilib import Encoder
 
 from navx import AHRS
 
-from position_approximation import PosApprox
+
 
 from rev.color import ColorSensorV3
 
@@ -18,7 +18,7 @@ class Encoders:
     left_encoder: Encoder
     right_encoder: Encoder
 
-    location: PosApprox
+    #location: PosApprox
 
     def __init__(self):
         pass
@@ -59,7 +59,7 @@ class Encoders:
 
 class NavX:
     navx_ahrs: AHRS
-    location: PosApprox
+    #location: PosApprox
 
     def __init__(self):
         self.reset_state()
@@ -70,7 +70,7 @@ class NavX:
     def reset(self):
         self.reset_state()
 
-        self.location.navx_reset();
+#        self.location.navx_reset();
 
         self.navx_ahrs.reset()
 

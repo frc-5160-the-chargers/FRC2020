@@ -110,6 +110,7 @@ class IntakeLift:
         #     self.intake_lift_motor.stopMotor()
         
         self.pid_controller.execute()
+        print(self.get_position())
 
         if self.position == IntakeLiftPosition.RAISED:
             self.pid_controller.run_setpoint(RobotMap.IntakeLift.up_position)
