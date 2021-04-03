@@ -2,6 +2,7 @@ from magicbot import AutonomousStateMachine, state
 
 from components.drivetrain import Drivetrain, DrivetrainState
 from components.sensors import EncoderSide
+from components.position_approximation import PosApprox
 
 from robotmap import RobotMap
 
@@ -15,6 +16,7 @@ class Autonav(AutonomousStateMachine):
     MODE_NAME = "Autonav"
 
     drivetrain: Drivetrain
+    location: PosApprox
 
     nodes = Paths.SLALOM
     index = 0
@@ -33,6 +35,7 @@ class Autonav(AutonomousStateMachine):
             self.index = 0
             self.drivetrain.navx.reset()
             self.drivetrain.encoders.reset()
+            self.location.reset();
             self.drivetrain.turn_to_angle(self.nodes[self.index][0],global_angle=True)
 
         

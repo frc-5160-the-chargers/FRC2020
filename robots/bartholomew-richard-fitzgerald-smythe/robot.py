@@ -159,8 +159,6 @@ class Robot(magicbot.MagicRobot):
             # manually handled driving
             if self.drivetrain.state == DrivetrainState.MANUAL_DRIVE:
                 self.drivetrain.curvature_drive(driver_y, driver_x)
-            elif self.drivetrain.state == DrivetrainState.AIM_TO_TARGET:
-                self.drivetrain.aim_to_target();
 
             # set turbo mode
             self.drivetrain.set_power_scaling(self.driver.process_turbo_mode())
@@ -200,7 +198,7 @@ class Robot(magicbot.MagicRobot):
 
         try:
             if self.sysop.get_target_aim():
-                self.drivetrain.aim_at_target()
+                self.shooter.aim_and_fire();
             elif self.sysop.get_shooter_stop():
                 self.shooter.stop_fire()
                 self.drivetrain.reset_state();
