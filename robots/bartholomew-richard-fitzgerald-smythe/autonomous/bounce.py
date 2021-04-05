@@ -25,6 +25,8 @@ class Bounce(AutonomousStateMachine):
 
     roboPower = -RobotMap.Drivetrain.max_auto_power
 
+    distance_traveled = 0;
+
     @state(first=True)
     def track(self, initial_call):
         '''
@@ -39,7 +41,7 @@ class Bounce(AutonomousStateMachine):
             self.drivetrain.navx.reset()
             self.drivetrain.encoders.reset()
             self.drivetrain.powertrain.set_arcade_powers(power=self.roboPower)
-            self.drivetrain.special_turn_to_angle(self.current_path[self.index][0])
+            self.drivetrain.turn_to_angle(self.current_path[self.index][0],global_angle=True)
 
         
         elif self.index >= len(self.current_path)-1:
@@ -47,19 +49,19 @@ class Bounce(AutonomousStateMachine):
                 self.current_path = self.paths[self.pathNum]
                 self.pathNum+=1
                 self.index = 0
-                self.roboPower = -self.robotPower
+                self.roboPower = -self.roboPower
                 self.drivetrain.powertrain.set_arcade_powers(power=self.roboPower)
-                if self.robotPower < 0:
+                if self.roboPower < 0:
                     for node in self.current_path:
                         node[1] = -node[1]
             else:
                 self.drivetrain.stop()
                 self.done()
         
-        elif self.drivetrain.get_position(EncoderSide.BOTH) > self.current_path[self.index][1]:
+        elif math.copysign(1,self.roboPower)*(self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled) > math.copysign(1,self.roboPower)*self.nodes[self.index][1]:
             self.drivetrain.turn_pid.stop()
             self.index+=1
-            self.drivetrain.special_turn_to_angle(self.current_path[self.index][0])
-            self.drivetrain.encoders.reset()
+            self.drivetrain.turn_to_angle(self.current_path[self.index][0],global_angle=True)
+            self.distance_traveled = self.drivetrain.get_position(EncoderSide.BOTH)
             #print("node switch")
             
