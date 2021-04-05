@@ -12,7 +12,7 @@ from pid import SuperPIDController, ff_constant, ff_flywheel, PidManager
 from kinematics import ArcDrive
 
 from components.limelight import Limelight
-from components.shooter import Shooter
+#from components.shooter import Shooter
 class PowertrainMode:
     TANK_DRIVE = 0
     CURVATURE_DRIVE = 1
@@ -88,6 +88,7 @@ class DrivetrainState:
     # 10-19 == aided modes
     AIDED_DRIVE_STRAIGHT = 10
     STOPPPED = 11
+
     # 20-29 == PID modes
     PID_TURNING = 20
     PID_STRAIGHT = 21
@@ -174,6 +175,9 @@ class Drivetrain:
         self.encoders.reset()
         self.navx.reset()
 
+        self.location.navx_reset();
+        self.location.encoder_reset();
+
         self.reset_state()
 
 
@@ -207,14 +211,6 @@ class Drivetrain:
             self.turn_pid.run_setpoint(self.navx.get_heading())
         self.powertrain.set_arcade_powers(power=power)
     
-    def aim_at_target(self):
-        if self.state == DrivetrainState.MANUAL_DRIVE:
-            self.turn_to_angle(self.limelight.get_horizontal_angle_offset(), self.start_fire)
-
-    def start_fire(self):
-        self.shooter.fire()
-        self.state = DrivetrainState.STOPPPED
-
     def turn_to_limelight_target(self,next = None):
         if self.state != DrivetrainState.PID_LIMELIGHT_TURNING:
             self.pid_manager.stop_controllers();
@@ -250,6 +246,7 @@ class Drivetrain:
         self.powertrain.differential_drive.setMaxOutput(new_power_scaling)
 
     def stop(self):
+        self.state = DrivetrainState.STOPPPED;
         self.tank_drive(0, 0)
 
     def execute(self):

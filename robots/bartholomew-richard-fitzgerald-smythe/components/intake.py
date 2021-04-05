@@ -55,7 +55,7 @@ class IntakeLift:
         return self.intake_lift_motor.getSelectedSensorPosition() * RobotMap.IntakeLift.encoder_distance_per_pulse
 
     def get_feedforwards(self, target, error): #maybe add an actual feedforward to handle loads?
-        return 0
+        return 0.1
 
     def raise_lift(self, power):
         self.pid_controller.stop()
@@ -110,14 +110,14 @@ class IntakeLift:
         #     self.intake_lift_motor.stopMotor()
         
         self.pid_controller.execute()
-        print(self.get_position())
+        #print(self.get_position())
 
         if self.position == IntakeLiftPosition.RAISED:
             self.pid_controller.run_setpoint(RobotMap.IntakeLift.up_position)
         elif self.position == IntakeLiftPosition.LOWERED:
             self.pid_controller.run_setpoint(RobotMap.IntakeLift.down_position)
         elif self.position == IntakeLiftPosition.MATCH_START:
-            self.pid_controller.run_setpoint(0)
+            self.pid_controller.run_setpoint(-1) #trying to raise it higher so that it stays up
 
         if self.state == IntakeLiftState.PID_CONTROLLED:
             self.intake_lift_motor.set(self.power)

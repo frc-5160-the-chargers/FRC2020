@@ -29,16 +29,18 @@ class GalacticPaths:
 
     LIFT_POWER = 0.5;
 
-class GalacticAuto(AutonomousStateMachine):
+    
 
-    MODE_NAME = "Galactic Search Auto"
-    DEFAULT = False
+
+class GalacticAuto(AutonomousStateMachine):
 
     drivetrain: Drivetrain;
     limelight: Limelight;
     intake_lift: IntakeLift;
     intake_roller: IntakeRoller;
     navx: NavX
+
+    path_offset = -1; #which field, 0 or 1
 
     @state(first=True)
     def start_search(self,initial_call):
@@ -53,20 +55,20 @@ class GalacticAuto(AutonomousStateMachine):
 
 
     @state() #should be called three times; gets power cell into frame
-    def find_power_cell(self,initial_call):
-        print("searching for power cell",self.collected_cells+1,"on path",self.path,"turning towards angle",GalacticPaths.PATHS[self.path][self.collected_cells],"with error",self.drivetrain.turn_pid.get_error(),";",("ball estimated at global angle" + str(self.navx.get_heading() + self.limelight.horizontal_offset)) if self.limelight.valid_target else "");
+    def find_power_cell(self,initial_call): #TODO: FIX PATH IDENTIFICATION
+        print("searching for power cell",self.collected_cells+1,"on path",self.path,"turning towards angle",GalacticPaths.PATHS[self.path+2*self.path_offset][self.collected_cells],"with error",self.drivetrain.turn_pid.get_error(),";",("ball estimated at global angle" + str(self.navx.get_heading() + self.limelight.horizontal_offset)) if self.limelight.valid_target else "");
         if self.limelight.valid_target:
             if self.collected_cells == 0: #identify path; assuming that both front cells should be visible from start location - might need change based on testing
                 print("Initial target spotted at angle",self.navx.get_heading() + self.limelight.horizontal_offset);
-                self.path = AngleUtils.closest_angle(self.navx.get_heading() + self.limelight.horizontal_offset,GalacticPaths.PATHS[GalacticPaths.BLUE_PATH][0],GalacticPaths.PATHS[GalacticPaths.RED_PATH][0]);
+                self.path = AngleUtils.closest_angle(self.navx.get_heading() + self.limelight.horizontal_offset,GalacticPaths.PATHS[GalacticPaths.BLUE_PATH+2*self.path_offset][0],GalacticPaths.PATHS[GalacticPaths.RED_PATH+2*self.path_offset][0]);
                 self.next_state('target_power_cell');
-            elif (abs(self.limelight.horizontal_offset) < self.limelight.FOV/2-GalacticPaths.CELL_IMAGE_MARGIN and abs(self.navx.get_heading() + self.limelight.horizontal_offset - GalacticPaths.PATHS[self.path][self.collected_cells]) < GalacticPaths.ANGLE_TOLERANCE):
+            elif (abs(self.limelight.horizontal_offset) < self.limelight.FOV/2-GalacticPaths.CELL_IMAGE_MARGIN and abs(self.navx.get_heading() + self.limelight.horizontal_offset - GalacticPaths.PATHS[self.path+2*self.path_offset][self.collected_cells]) < GalacticPaths.ANGLE_TOLERANCE):
                 print("Target Spotted");
                 self.next_state('target_power_cell');
         
         if initial_call:
             if self.path != -1:
-                self.drivetrain.turn_to_angle(GalacticPaths.PATHS[self.path][self.collected_cells]);
+                self.drivetrain.turn_to_angle(GalacticPaths.PATHS[self.path+2*self.path_offset][self.collected_cells]);
 
 
     @state() #point towards the limelight target
@@ -117,11 +119,11 @@ class GalacticAuto(AutonomousStateMachine):
     def find_end(self,initial_call): #assuming limelight-based end recognition; going to go directly to limelight target
         if initial_call:
             self.limelight.switch_pipeline(2);
-        if self.limelight.valid_target and (abs(self.navx.get_heading() + self.limelight.horizontal_offset - GalacticPaths.PATHS[self.path][self.collected_cells]) < GalacticPaths.ANGLE_TOLERANCE):
+        if self.limelight.valid_target and (abs(self.navx.get_heading() + self.limelight.horizontal_offset - GalacticPaths.PATHS[self.path+2*self.path_offset][self.collected_cells]) < GalacticPaths.ANGLE_TOLERANCE):
             print("End Spotted");
             self.next_state('drive_to_end');
         elif initial_call:
-            self.drivetrain.turn_to_angle(GalacticPaths.PATHS[self.path][self.collected_cells]);            
+            self.drivetrain.turn_to_angle(GalacticPaths.PATHS[self.path+2*self.path_offset][self.collected_cells]);            
 
     @state()
     def drive_to_end(self,initial_call):
@@ -131,4 +133,13 @@ class GalacticAuto(AutonomousStateMachine):
             
 
 
+class GalacticAutoA(GalacticAuto):
+    MODE_NAME = "Galactic Search Auto Path A";
+    DEFAULT = False;
+    path_offset = 0;
+
+class GalacticAutoB(GalacticAuto):
+    MODE_NAME = "Galactic Search Auto Path B";
+    DEFAULT = False;
+    path_offset = 2;
 

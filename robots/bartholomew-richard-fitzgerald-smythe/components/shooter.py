@@ -4,6 +4,7 @@ from magicbot import tunable
 import math
 from robotmap import RobotMap
 from components.limelight import Limelight
+from components.drivetrain import Drivetrain
 from components.sensors import WheelOfFortuneSensor
 from components.serializer import Serializer
 #from components.drivetrain import Drivetrain
@@ -12,7 +13,7 @@ class Shooter:
     #color_sensro : WheelOfFortuneSensor
     serializer : Serializer
     limelight : Limelight
-    #drivetrain : Drivetrain
+    drivetrain : Drivetrain
 
     def __init__(self):
         self.power = 0
@@ -20,9 +21,10 @@ class Shooter:
         self.shooter_kP = 0
         self.shooter_kF = 0
         self.state = ShooterState.SHOOTER_OFF
+        self.turn_method = 'center_image';
 
-    def get_raw_velocity(self):
-        return self.shooter_motor.getEncoder().getVelocity()
+    #def get_raw_velocity(self):
+        #return self.shooter_motor.getEncoder().getVelocity()
 
     def update_pid(self, kP, kF):
         self.shooter_kP = kP
@@ -48,9 +50,20 @@ class Shooter:
     def set_power(self, power):
         self.power = power
 
+    def aim_and_fire(self):
+        if self.state == ShooterState.SHOOTER_OFF:
+            self.state = ShooterState.AIMING;
+            if self.turn_method == 'center_image':
+                self.drivetrain.turn_to_limelight_target(next=self.fire);    
+            else:
+                self.drivetrain.turn_to_angle(self.limelight.get_horizontal_angle_offset(), next=self.fire);
+
+        
+    
     def fire(self):
-        if(self.state == ShooterState.SHOOTER_OFF):
+        if(self.state != ShooterState.SHOOTER_ON):
             self.state = ShooterState.SHOOTER_ON
+            self.drivetrain.stop();
             self.set_power(self.distance_power_calculator())
 
     def stop_fire(self):
@@ -58,7 +71,7 @@ class Shooter:
             self.state = ShooterState.SHOOTER_OFF
             self.serializer.turn_off
             self.set_power(0)
-            #self.drivetrain.reset_state()
+            self.drivetrain.reset_state()
 
     def adjust_power(self, rpm):
         self.power += (rpm/200)
@@ -78,3 +91,4 @@ class ShooterState:
     # 0-9 == Shoot
     SHOOTER_ON = 0
     SHOOTER_OFF = 1
+    AIMING = 2;
