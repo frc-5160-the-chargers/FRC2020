@@ -148,7 +148,7 @@ class Location:
 
     def reset(self,startPos=None,startAngle=None):
         self.pos = startPos if startPos is not None else self.startPos.copy();
-        self.angle = startAngle if startAngle is not None else self.startAngle.copy();
+        self.angle = startAngle if startAngle is not None else self.startAngle;
 
     def __str__(self):
         return f"robot location: Pos: {self.pos}, Angle:{self.angle}, Approximation Types: {self.types}";

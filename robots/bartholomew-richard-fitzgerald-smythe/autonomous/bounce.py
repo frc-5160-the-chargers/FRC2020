@@ -23,7 +23,7 @@ class Bounce(AutonomousStateMachine):
     pathNum = 1
     current_path = paths[0]
 
-    roboPower = -RobotMap.Drivetrain.max_auto_power
+    roboPower = RobotMap.Drivetrain.max_auto_power
 
     distance_traveled = 0;
 
@@ -58,7 +58,8 @@ class Bounce(AutonomousStateMachine):
                 self.drivetrain.stop()
                 self.done()
         
-        elif math.copysign(1,self.roboPower)*(self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled) > math.copysign(1,self.roboPower)*self.nodes[self.index][1]:
+        elif math.copysign(1,self.roboPower)*(self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled) > math.copysign(1,self.roboPower)*self.current_path[self.index][1]:
+            print("new node: ",self.current_path[self.index]);
             self.drivetrain.turn_pid.stop()
             self.index+=1
             self.drivetrain.turn_to_angle(self.current_path[self.index][0],global_angle=True)
