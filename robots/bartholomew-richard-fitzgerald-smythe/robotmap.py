@@ -35,7 +35,7 @@ class RobotMap:
         distance_between_wheels = 22.5
 
         max_motor_power = .4
-        max_auto_power = .3
+        max_auto_power = .7
         turbo_mode_power = .57
 
         #kF = feedforward constants - base loads that need to be provided when on target (estimation). kF_straightz
