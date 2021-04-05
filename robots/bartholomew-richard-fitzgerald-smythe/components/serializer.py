@@ -12,9 +12,10 @@ class Serializer:
         self.power = 0
     
     def turn_on(self):
+        print("turning on");
         if (self.state == SerializerState.SERIALIZER_OFF):
             self.state = SerializerState.SERIALIZER_ON
-            self.power = .1
+            self.power = .2
     
     def turn_off(self):
         if (self.state == SerializerState.SERIALIZER_ON):

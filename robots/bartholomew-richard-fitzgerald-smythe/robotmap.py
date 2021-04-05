@@ -82,8 +82,8 @@ class RobotMap:
         encoder_port_a = 4
         encoder_port_b = 5
 
-        up_position = 14
-        down_position = 73
+        up_position = 2
+        down_position = 77
 
     class IntakeRoller:
         motor_port = 6
