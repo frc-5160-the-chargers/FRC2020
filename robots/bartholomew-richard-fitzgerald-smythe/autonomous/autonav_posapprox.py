@@ -81,8 +81,7 @@ class Autonav(AutonomousStateMachine):
         else:
             direction = math.copysign(1,self.currentPath.power);
             if direction*(self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled) > direction*self.currentAction[1]:
-                self.drivetrain.turn_pid.stop()
-                self.getNextAction()
+                self.getNextAction(True)
                 self.drivetrain.turn_to_angle(self.currentAction[0])
                 self.distance_traveled = self.drivetrain.get_position(EncoderSide.BOTH)
                 #print("node switch")
