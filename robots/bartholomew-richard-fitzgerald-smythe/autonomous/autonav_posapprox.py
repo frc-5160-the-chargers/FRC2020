@@ -51,7 +51,7 @@ class Autonav(AutonomousStateMachine):
     paths = Paths.SLALOM
     pathIndex = 0;
     actionIndex = 0;
-    distance_traveled = 0;
+    last_position = 0;
     currentPath = None;
     currentAction = [];
 
@@ -80,10 +80,10 @@ class Autonav(AutonomousStateMachine):
 
         else:
             direction = math.copysign(1,self.currentPath.power);
-            if direction*(self.drivetrain.get_position(EncoderSide.BOTH)-self.distance_traveled) > direction*self.currentAction[1]:
+            if direction*(self.drivetrain.get_position(EncoderSide.BOTH)-self.last_position) > direction*self.currentAction[1]:
                 self.getNextAction(True)
                 self.drivetrain.turn_to_angle(self.currentAction[0])
-                self.distance_traveled = self.drivetrain.get_position(EncoderSide.BOTH)
+                self.last_position = self.drivetrain.get_position(EncoderSide.BOTH)
                 #print("node switch")
 
         self.drivetrain.powertrain.set_arcade_powers(power=self.currentPath.power)
