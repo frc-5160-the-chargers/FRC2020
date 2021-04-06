@@ -14,7 +14,7 @@ class Paths:
     FOUR = [[85.44669976214757, 4.748248525917799], [-269.3156527514233, 4.85526368835853], [-266.674361699064, 4.926938652709303], [-266.4381401259706, 4.9339659269933955], [-268.5876283314238, 4.873778642896525], [86.7144649029857, 4.770070768288422], [79.55276414278607, 4.6799237038044605], [72.33663818308919, 4.672866612083094], [66.38894060835072, 4.736268409195954], [61.807850640713845, 4.8380309996240225], [58.555591700678036, 4.952848215814623], [56.54197957341636, 5.063026696651243], [55.67481473259374, 5.157913517484322], [55.67292015795986, 5.228651369528129], [55.25450029748867, 5.2489291730904934], [53.944944172701305, 5.211146217587464], [51.68117900978661, 5.121021099572728], [48.34450714835789, 4.989007395852151], [43.76684968123957, 4.831687172100035], [37.756253393666746, 4.673720217122021], [30.16447375388483, 4.549725420036128], [21.017260432763656, 4.5043637422562695], [10.673496396008023, 4.587727810755061], [-0.1323102819898293, 4.844606967436753], [-10.509913247404521, 5.302376787232356], [0, 0]]
 
 class Bounce(AutonomousStateMachine):
-    MODE_NAME = "Bounce"
+    MODE_NAME = "Bounce Wacked"
 
     drivetrain: Drivetrain
 
@@ -41,14 +41,14 @@ class Bounce(AutonomousStateMachine):
     @state(first=True)
     def one(self, initial_call):
         self.drivetrain.powertrain.set_arcade_powers(power=-RobotMap.Drivetrain.max_auto_power)
-        result = track(initial_call, Paths.ONE, 1)
+        result = self.track(initial_call, Paths.ONE, 1)
         if result < 0:
             self.next_state('two')
     
     @state()
     def two(self, initial_call):
         self.drivetrain.powertrain.set_arcade_powers(power=RobotMap.Drivetrain.max_auto_power)
-        result = track(initial_call, Paths.TWO, -1)
+        result = self.track(initial_call, Paths.TWO, -1)
         if result < 0:
             self.next_state('three')
     
