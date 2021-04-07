@@ -21,7 +21,7 @@ class Shooter:
         self.shooter_kP = 0
         self.shooter_kF = 0
         self.state = ShooterState.SHOOTER_OFF
-        self.turn_method = 'center_image';
+        self.turn_method = 'center_image'
 
     #def get_raw_velocity(self):
         #return self.shooter_motor.getEncoder().getVelocity()
@@ -52,18 +52,18 @@ class Shooter:
 
     def aim_and_fire(self):
         if self.state == ShooterState.SHOOTER_OFF:
-            self.state = ShooterState.AIMING;
+            self.state = ShooterState.AIMING
             if self.turn_method == 'center_image':
                 self.drivetrain.turn_to_limelight_target(next=self.fire);    
             else:
-                self.drivetrain.turn_to_angle(self.limelight.get_horizontal_angle_offset(), next=self.fire);
+                self.drivetrain.turn_to_angle(self.limelight.get_horizontal_angle_offset(), next=self.fire)
 
         
     
     def fire(self):
         if(self.state != ShooterState.SHOOTER_ON):
             self.state = ShooterState.SHOOTER_ON
-            self.drivetrain.stop();
+            self.drivetrain.stop()
             self.set_power(self.distance_power_calculator())
 
     def stop_fire(self):
@@ -91,4 +91,4 @@ class ShooterState:
     # 0-9 == Shoot
     SHOOTER_ON = 0
     SHOOTER_OFF = 1
-    AIMING = 2;
+    AIMING = 2
